@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">FirstRate Currency</string>
+    <string name="country_flag">Country flag</string>
+    <string name="country_currency">Country Currency</string>
+    <string name="country_code">Country Code</string>
+    <string name="base_currency_number">1.00</string>
+</resources>
