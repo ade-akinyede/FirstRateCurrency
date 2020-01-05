@@ -1,10 +1,8 @@
-package com.firstratecurrency.app
+package com.firstratecurrency.app.ui
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.widget.Toast
-import io.reactivex.Observable
-import io.reactivex.functions.Consumer
+import com.firstratecurrency.app.R
 
 class MainActivity : AppCompatActivity() {
 
