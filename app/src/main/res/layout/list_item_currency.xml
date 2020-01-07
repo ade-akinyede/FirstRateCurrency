@@ -18,6 +18,17 @@
         android:scaleType="centerCrop"
         tools:srcCompat="@tools:sample/avatars" />
 
+<!--    <androidx.constraintlayout.widget.Guideline-->
+<!--        android:id="@+id/ratesListEntryGuideline"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:orientation="vertical"-->
+<!--        app:layout_constraintGuide_begin="@dimen/photo_size"/>-->
+
+    <include
+        android:id="@+id/ratesListEntryGuideline"
+        layout="@layout/list_item_guideline" />
+
     <TextView
         android:id="@+id/countryCode"
         android:layout_width="wrap_content"
@@ -29,7 +40,7 @@
         android:textSize="@dimen/heading_text_size"
         android:textStyle="bold"
         app:layout_constraintBottom_toTopOf="@+id/countryCurrency"
-        app:layout_constraintStart_toEndOf="@+id/countryFlag"
+        app:layout_constraintStart_toEndOf="@+id/ratesListEntryGuideline"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
@@ -41,7 +52,7 @@
         android:text="@string/country_currency"
         android:textSize="@dimen/detail_text_size"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/countryFlag"
+        app:layout_constraintStart_toEndOf="@+id/ratesListEntryGuideline"
         app:layout_constraintTop_toBottomOf="@+id/countryCode" />
 
     <EditText
