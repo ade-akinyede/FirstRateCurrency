@@ -4,7 +4,13 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.DecodeFormat
+import com.bumptech.glide.load.resource.bitmap.CircleCrop
+import com.bumptech.glide.load.resource.bitmap.RoundedCorners
+import com.bumptech.glide.request.RequestOptions
 import com.firstratecurrency.app.R
 import com.firstratecurrency.app.data.Currency
 import com.firstratecurrency.app.di.component.AppComponent
@@ -22,6 +28,12 @@ class RatesListAdapter(private val ratesList: ArrayList<Currency>): RecyclerView
     object Configuration {
         const val TYPE_HEADER = 100
         const val TYPE_LIST_ITEM = 200
+        val GLIDE_IMAGE_OPTIONS: RequestOptions =
+            RequestOptions().placeholder(R.drawable.ic_launcher_background)
+                .error(R.drawable.ic_launcher_background)
+                .fitCenter()
+                .format(DecodeFormat.PREFER_ARGB_8888)
+                .transform(CircleCrop())
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
@@ -56,12 +68,16 @@ class RatesListAdapter(private val ratesList: ArrayList<Currency>): RecyclerView
         val entry: Currency = ratesList[position]
         holder.view.countryCurrency.text = entry.country.name
         holder.view.currencyCode.text = entry.code
-        holder.view.countryFlag.apply {
-            this.setImageResource(
-                if (entry.country.flag == -1) R.drawable.ic_country_flag_placeholder
-                else entry.country.flag
-            )
-        }
+//        holder.view.countryFlag.apply {
+//            this.setImageResource(
+//                if (entry.country.flag == -1) R.drawable.ic_country_flag_placeholder
+//                else entry.country.flag
+//            )
+//        }
+        Glide.with(holder.view).load(entry.country.flag)
+            .apply(Configuration.GLIDE_IMAGE_OPTIONS)
+            .into(holder.view.countryFlag)
+
         holder.view.currencyExchangeEntry.setText(entry.rate.toString())
     }
 
