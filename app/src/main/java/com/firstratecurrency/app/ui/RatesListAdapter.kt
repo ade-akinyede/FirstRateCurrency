@@ -1,14 +1,18 @@
 package com.firstratecurrency.app.ui
 
+import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.firstratecurrency.app.R
 import com.firstratecurrency.app.data.Currency
+import com.firstratecurrency.app.di.component.AppComponent
+import com.firstratecurrency.app.di.component.DaggerAppComponent
 import kotlinx.android.synthetic.main.list_header.view.*
 import kotlinx.android.synthetic.main.list_item_currency.view.*
 import timber.log.Timber
+import javax.inject.Inject
 
 class RatesListAdapter(private val ratesList: ArrayList<Currency>): RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
@@ -50,8 +54,8 @@ class RatesListAdapter(private val ratesList: ArrayList<Currency>): RecyclerView
 
     private fun populateListItem(holder: RatesListViewHolder, position: Int) {
         val entry: Currency = ratesList[position]
-        holder.view.countryCode.text = entry.country.name
-        holder.view.countryCurrency.text = entry.currency
+        holder.view.countryCurrency.text = entry.country.name
+        holder.view.currencyCode.text = entry.code
         holder.view.countryFlag.apply {
             this.setImageResource(
                 if (entry.country.flag == -1) R.drawable.ic_country_flag_placeholder

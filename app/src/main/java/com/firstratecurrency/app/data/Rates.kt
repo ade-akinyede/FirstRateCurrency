@@ -51,7 +51,7 @@ data class Rates(
 )
 
 data class Currency(
-    val currency: String,
+    val code: String,
     val rate: Double,
     val country: Country
 )
