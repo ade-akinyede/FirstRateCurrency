@@ -49,10 +49,16 @@ class RatesListAdapter(private val ratesList: ArrayList<Currency>): RecyclerView
     }
 
     private fun populateListItem(holder: RatesListViewHolder, position: Int) {
-        holder.view.countryCode.text = ratesList[position].country.name
-        holder.view.countryCurrency.text = ratesList[position].currency
-//        holder.view.countryFlag
-        holder.view.currencyExchangeEntry.setText(ratesList[position].rate.toString())
+        val entry: Currency = ratesList[position]
+        holder.view.countryCode.text = entry.country.name
+        holder.view.countryCurrency.text = entry.currency
+        holder.view.countryFlag.apply {
+            this.setImageResource(
+                if (entry.country.flag == -1) R.drawable.ic_country_flag_placeholder
+                else entry.country.flag
+            )
+        }
+        holder.view.currencyExchangeEntry.setText(entry.rate.toString())
     }
 
     fun updateList(updatedList: List<Currency>) {
