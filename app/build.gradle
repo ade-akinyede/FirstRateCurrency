@@ -37,31 +37,53 @@ android {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
-    implementation deps.support.appcompat
-    implementation deps.support.recyclerview
-    implementation deps.support.cardview
-    implementation deps.support.design
-    implementation deps.support.coreKtx
-    implementation deps.room.runtime
-    implementation deps.lifecycle.runtime
-    implementation deps.lifecycle.java8
-    implementation deps.retrofit.runtime
-    implementation deps.retrofit.gson
-    implementation deps.glide.runtime
+    implementation"org.jetbrains.kotlin:kotlin-stdlib-jdk7:$versions.kotlin"
+    implementation "androidx.core:core-ktx:$versions.coreKtx"
+    implementation "com.android.support:appcompat-v7:$versions.support"
 
-    implementation deps.dagger.runtime
-    implementation deps.dagger.android
-    implementation deps.dagger.androidSupport
-    implementation deps.constraintLayout
-    implementation deps.kotlin.stdlib
+    // Testing
+    testImplementation "junit:junit:$versions.junit"
+    androidTestImplementation "com.android.support.test:runner:$versions.runner"
+    androidTestImplementation "com.android.support.test.espresso:espresso-core:$versions.espresso"
 
-    kapt deps.dagger.androidSupportCompiler
-    kapt deps.dagger.compiler
-    kapt deps.room.compiler
-    kapt deps.lifecycle.compiler
+    testImplementation "org.mockito:mockito-inline:$versions.mockito"
+    testImplementation "android.arch.core:core-testing:$versions.runner"
+    kaptTest "com.google.dagger:dagger-compiler:$versions.dagger"
 
-    // Testing dependencies
-    testImplementation deps.test.junit
-    androidTestImplementation 'androidx.test.ext:junit:1.1.1'
-    androidTestImplementation deps.test.espressoCore
+    // Support Design
+    implementation "com.android.support:design:$versions.support"
+
+    // RecyclerView
+    implementation "com.android.support:recyclerview-v7:$versions.support"
+
+    // Constraint Layout
+    implementation "com.android.support.constraint:constraint-layout:$versions.constraintLayout"
+
+    // LiveData & ViewModel
+    implementation"android.arch.lifecycle:extensions:$versions.lifecycle"
+
+    // Room
+    implementation "android.arch.persistence.room:runtime:$versions.room"
+    kapt "android.arch.persistence.room:compiler:$versions.room"
+
+    // Retrofit
+    implementation "com.squareup.retrofit2:retrofit:$versions.retrofit"
+    implementation "com.squareup.retrofit2:adapter-rxjava2:$versions.retrofit"
+    implementation "com.squareup.retrofit2:converter-gson:$versions.retrofit"
+
+    // Dagger 2
+    implementation "com.google.dagger:dagger:$versions.dagger"
+    implementation "com.google.dagger:dagger-android-support:$versions.dagger"
+    kapt "com.google.dagger:dagger-compiler:$versions.dagger"
+    kapt "com.google.dagger:dagger-android-processor:$versions.dagger"
+
+    //Rx
+    implementation "io.reactivex.rxjava2:rxjava:$versions.rxjava2"
+    implementation "io.reactivex.rxjava2:rxandroid:$versions.rxAndroid"
+    
+    // Glide
+    implementation "com.github.bumptech.glide:glide:$versions.glide"
+
+    // Currency Picker for Android
+    implementation "com.github.midorikocak:currency-picker-android:$versions.currencyPicker"
 }
