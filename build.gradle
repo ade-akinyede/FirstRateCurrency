@@ -28,7 +28,9 @@ buildscript {
             espresso: '3.2.0',
             runner: '1.1.1',
             mockito: '2.11.0',
-            currencyPicker: '1.2.1'
+            currencyPicker: '1.2.1',
+            loggingInterceptor: '4.3.1',
+            timber: '4.7.1'
         ]
     }
 
