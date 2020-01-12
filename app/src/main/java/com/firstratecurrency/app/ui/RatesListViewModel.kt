@@ -3,19 +3,62 @@ package com.firstratecurrency.app.ui
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
+import com.firstratecurrency.app.data.Currency
 import com.firstratecurrency.app.data.Rates
+import com.firstratecurrency.app.data.RatesApiService
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.observers.DisposableSingleObserver
+import io.reactivex.schedulers.Schedulers
 
 class RatesListViewModel(app: Application): AndroidViewModel(app) {
 
-    val rates by lazy { MutableLiveData<List<Rates>>() }
+    val rates by lazy { MutableLiveData<List<Currency>>() }
     val loading by lazy { MutableLiveData<Boolean>() }
     val loadError by lazy { MutableLiveData<Boolean>() }
 
-    fun refresh() {
+    private val disposable = CompositeDisposable()
+    private val ratesApiService = RatesApiService()
+
+    init {
+        refresh()
+    }
+
+    private fun refresh() {
         getRates()
     }
 
     private fun getRates() {
+        disposable.add(
+            ratesApiService.getRates()
+                .subscribeOn(Schedulers.newThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeWith(object: DisposableSingleObserver<Rates>() {
+                    override fun onSuccess(ratesList: Rates) {
+                        if (ratesList.currencies.isNotEmpty()) {
+                            rates.value = ratesList.currencies
+                            loadError.value = false
+                            loading.value = false
+                        } else {
+                            loadError.value = true
+                            loading.value = false
+                            rates.value = null
+                        }
+                    }
+
+                    override fun onError(error: Throwable) {
+                        error.printStackTrace()
+                        loading.value = false
+                        rates.value = null
+                        loadError.value = true
+                    }
+
+                })
+        )
+    }
+
+    /*
+    private fun getMockRates() {
         rates.value = arrayListOf(
             Rates("AUD",1.6207),
             Rates("BGN", 1.961),
@@ -54,5 +97,11 @@ class RatesListViewModel(app: Application): AndroidViewModel(app) {
 
         loading.value = false
         loadError.value = false
+    }
+     */
+
+    override fun onCleared() {
+        super.onCleared()
+        disposable.clear()
     }
 }

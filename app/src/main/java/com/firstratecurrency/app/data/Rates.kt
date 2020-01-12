@@ -1,5 +1,7 @@
 package com.firstratecurrency.app.data
 
+import com.google.gson.annotations.SerializedName
+
 /**
  * Sample API response from endpoint https://revolut.duckdns.org/latest?base=EUR
  * {
@@ -41,6 +43,20 @@ package com.firstratecurrency.app.data
     }
  */
 data class Rates(
+    val base: String,
+    val date: String,
+
+    @SerializedName("rates")
+    val currencies: List<Currency>
+)
+
+data class Currency(
     val currency: String,
-    val rate: Double
+    val rate: Double,
+    val country: Country
+)
+
+data class Country (
+    val name: String,
+    val flag: Int
 )
