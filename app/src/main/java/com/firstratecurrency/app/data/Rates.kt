@@ -45,8 +45,6 @@ import com.google.gson.annotations.SerializedName
 data class Rates(
     val base: String,
     val date: String,
-
-    @SerializedName("rates")
     val currencies: List<Currency>
 )
 

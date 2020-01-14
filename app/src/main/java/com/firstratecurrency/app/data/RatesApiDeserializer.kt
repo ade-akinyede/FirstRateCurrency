@@ -19,11 +19,11 @@ class RatesApiDeserializer: JsonDeserializer<Rates> {
         val date: String = jsonObject?.get("date")?.asString ?: ""
 
         Timber.d("Extracting rates for transformation...")
-        val rates: JsonElement? = jsonObject?.get("rates")
+        val rates = jsonObject?.get("rates")?.asJsonObject
         val ratesList: MutableList<Currency> = mutableListOf()
         rates?.apply {
             Timber.d("Transforming rates to list of Currency...")
-            this.asJsonObject.entrySet().iterator().forEach {
+            this.entrySet().iterator().forEach {
                 val extendedCurrency = ExtendedCurrency.getCurrencyByISO(it.key)
                 val country = Country(extendedCurrency.name, extendedCurrency.flag)
                 ratesList.add(Currency(it.key, it.value.asDouble, country))

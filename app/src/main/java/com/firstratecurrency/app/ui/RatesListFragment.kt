@@ -8,6 +8,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.firstratecurrency.app.FRCApp
 import com.firstratecurrency.app.R
 import com.firstratecurrency.app.data.Currency
 import kotlinx.android.synthetic.main.fragment_rates_list.*
@@ -16,7 +17,7 @@ import timber.log.Timber
 class RatesListFragment: Fragment() {
 
     private lateinit var ratesViewModel: RatesListViewModel
-    private val ratesListAdapter = RatesListAdapter(arrayListOf())
+    private val ratesListAdapter = RatesListAdapter(arrayListOf(), requireContext())
 
     private val ratesListDataObserver = Observer<List<Currency>> { list ->
         list?.let {

@@ -4,23 +4,18 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DecodeFormat
 import com.bumptech.glide.load.resource.bitmap.CircleCrop
-import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.bumptech.glide.request.RequestOptions
 import com.firstratecurrency.app.R
 import com.firstratecurrency.app.data.Currency
-import com.firstratecurrency.app.di.component.AppComponent
-import com.firstratecurrency.app.di.component.DaggerAppComponent
 import kotlinx.android.synthetic.main.list_header.view.*
 import kotlinx.android.synthetic.main.list_item_currency.view.*
 import timber.log.Timber
-import javax.inject.Inject
 
-class RatesListAdapter(private val ratesList: ArrayList<Currency>): RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+class RatesListAdapter(private val ratesList: ArrayList<Currency>, context: Context): RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     class RatesHeaderViewHolder(var view: View): RecyclerView.ViewHolder(view)
     class RatesListViewHolder(var view: View): RecyclerView.ViewHolder(view)
@@ -35,6 +30,8 @@ class RatesListAdapter(private val ratesList: ArrayList<Currency>): RecyclerView
                 .format(DecodeFormat.PREFER_ARGB_8888)
                 .transform(CircleCrop())
     }
+
+    private val headerTextTitle = context.getString(R.string.title_rates)
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         val inflater = LayoutInflater.from(parent.context)
@@ -61,7 +58,7 @@ class RatesListAdapter(private val ratesList: ArrayList<Currency>): RecyclerView
     }
 
     private fun populateHeader(holder: RatesHeaderViewHolder) {
-        holder.view.listHeaderText.text = "Rates"
+        holder.view.listHeaderText.text = headerTextTitle
     }
 
     private fun populateListItem(holder: RatesListViewHolder, position: Int) {
