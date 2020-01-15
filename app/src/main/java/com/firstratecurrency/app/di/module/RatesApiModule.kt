@@ -35,9 +35,11 @@ open class RatesApiModule {
         val httpClient = OkHttpClient.Builder()
         httpClient.addInterceptor(logging)
 
+        val gsonConverterFactory = GsonConverterFactory.create(GsonBuilder().registerTypeAdapter(Rates::class.java, RatesApiDeserializer()).create())
+
         return Retrofit.Builder()
             .baseUrl(BASE_URL)
-            .addConverterFactory(GsonConverterFactory.create(GsonBuilder().registerTypeAdapter(Rates::class.java, RatesApiDeserializer()).create()))
+            .addConverterFactory(gsonConverterFactory)
             .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
             .client(httpClient.build())
             .build()
