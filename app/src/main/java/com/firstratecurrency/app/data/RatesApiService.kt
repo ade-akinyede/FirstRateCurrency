@@ -1,6 +1,6 @@
 package com.firstratecurrency.app.data
 
-import com.firstratecurrency.app.di.component.DaggerApiComponent
+import com.firstratecurrency.app.di.component.DaggerRatesApiComponent
 import io.reactivex.Single
 import timber.log.Timber
 import javax.inject.Inject
@@ -11,7 +11,7 @@ class RatesApiService {
     lateinit var api: RatesApi
 
     init {
-        DaggerApiComponent.create().inject(this)
+        DaggerRatesApiComponent.create().inject(this)
     }
 
     fun getRates(): Single<Rates> {

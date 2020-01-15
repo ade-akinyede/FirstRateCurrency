@@ -17,7 +17,7 @@ import timber.log.Timber
 class RatesListFragment: Fragment() {
 
     private lateinit var ratesViewModel: RatesListViewModel
-    private val ratesListAdapter = RatesListAdapter(arrayListOf(), requireContext())
+    private lateinit var ratesListAdapter: RatesListAdapter
 
     private val ratesListDataObserver = Observer<List<Currency>> { list ->
         list?.let {
@@ -37,6 +37,7 @@ class RatesListFragment: Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        ratesListAdapter = RatesListAdapter(arrayListOf(), requireContext())
         ratesViewModel = ViewModelProviders.of(this).get(RatesListViewModel::class.java)
         ratesViewModel.rates.observe(viewLifecycleOwner, ratesListDataObserver)
 

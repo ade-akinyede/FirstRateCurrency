@@ -6,25 +6,37 @@ import androidx.lifecycle.MutableLiveData
 import com.firstratecurrency.app.data.Currency
 import com.firstratecurrency.app.data.Rates
 import com.firstratecurrency.app.data.RatesApiService
+import com.firstratecurrency.app.di.component.DaggerViewModelComponent
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.observers.DisposableSingleObserver
 import io.reactivex.schedulers.Schedulers
+import javax.inject.Inject
 
-class RatesListViewModel(app: Application): AndroidViewModel(app) {
+class RatesListViewModel(app: Application, private val test: Boolean = false): AndroidViewModel(app) {
 
     val rates by lazy { MutableLiveData<List<Currency>>() }
     val loading by lazy { MutableLiveData<Boolean>() }
     val loadError by lazy { MutableLiveData<Boolean>() }
 
     private val disposable = CompositeDisposable()
-    private val ratesApiService = RatesApiService()
+    @Inject
+    lateinit var ratesApiService:RatesApiService
 
     init {
-        refresh()
+        if (!test) {
+            refresh()
+        }
     }
 
-    private fun refresh() {
+    private fun inject() {
+        if (!test) {
+            DaggerViewModelComponent.create().inject(this)
+        }
+    }
+
+    fun refresh() {
+        inject()
         getRates()
     }
 

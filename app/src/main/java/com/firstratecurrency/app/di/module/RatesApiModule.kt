@@ -16,7 +16,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 import timber.log.Timber
 
 @Module
-class ApiModule {
+open class RatesApiModule {
 
     private val BASE_URL = "https://revolut.duckdns.org"
     private val logging: HttpLoggingInterceptor = HttpLoggingInterceptor()
@@ -45,5 +45,5 @@ class ApiModule {
     }
 
     @Provides
-    fun provideApiService(): RatesApiService = RatesApiService()
+    open fun provideApiService(): RatesApiService = RatesApiService()
 }

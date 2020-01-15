@@ -24,10 +24,9 @@ class RatesListAdapter(private val ratesList: ArrayList<Currency>, context: Cont
         const val TYPE_HEADER = 100
         const val TYPE_LIST_ITEM = 200
         val GLIDE_IMAGE_OPTIONS: RequestOptions =
-            RequestOptions().placeholder(R.drawable.ic_launcher_background)
-                .error(R.drawable.ic_launcher_background)
+            RequestOptions().placeholder(R.drawable.vd_flag)
+                .error(R.drawable.vd_flag)
                 .fitCenter()
-                .format(DecodeFormat.PREFER_ARGB_8888)
                 .transform(CircleCrop())
     }
 
