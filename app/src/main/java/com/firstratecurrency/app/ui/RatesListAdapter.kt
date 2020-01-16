@@ -2,6 +2,8 @@ package com.firstratecurrency.app.ui
 
 import android.content.Context
 import android.view.LayoutInflater
+import android.view.MotionEvent
+import android.view.MotionEvent.*
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
@@ -13,11 +15,35 @@ import com.firstratecurrency.app.data.Currency
 import kotlinx.android.synthetic.main.list_header.view.*
 import kotlinx.android.synthetic.main.list_item_currency.view.*
 import timber.log.Timber
+import java.lang.ref.WeakReference
 
-class RatesListAdapter(private val ratesList: ArrayList<Currency>, context: Context): RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+class RatesListAdapter(private val ratesList: ArrayList<Currency>, context: Context, private val rowListener: RowListener): RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     class RatesHeaderViewHolder(var view: View): RecyclerView.ViewHolder(view)
-    class RatesListViewHolder(var view: View): RecyclerView.ViewHolder(view)
+
+    class RatesListViewHolder(var view: View, var rowListener: RowListener):
+        RecyclerView.ViewHolder(view), View.OnTouchListener {
+
+//        private val rowListenerRef: WeakReference<RowListener> = WeakReference(rowListener)
+
+        init {
+            view.currencyExchangeEntry.setOnTouchListener(this)
+        }
+
+        override fun onTouch(view: View?, event: MotionEvent?): Boolean {
+            return when (event?.action) {
+                ACTION_UP -> {
+                    rowListener.onRowEntryClickListener(adapterPosition)
+                    return view?.performClick() ?: false
+                }
+                else -> false
+            }
+        }
+    }
+
+    interface RowListener {
+        fun onRowEntryClickListener(position: Int)
+    }
 
     object Configuration {
         const val TYPE_HEADER = 100
@@ -35,7 +61,7 @@ class RatesListAdapter(private val ratesList: ArrayList<Currency>, context: Cont
         val inflater = LayoutInflater.from(parent.context)
         return when (viewType) {
             Configuration.TYPE_HEADER -> RatesHeaderViewHolder(inflater.inflate(R.layout.list_header, parent, false))
-            else -> RatesListViewHolder(inflater.inflate(R.layout.list_item_currency, parent, false))
+            else -> RatesListViewHolder(inflater.inflate(R.layout.list_item_currency, parent, false), rowListener)
         }
     }
 
@@ -47,6 +73,8 @@ class RatesListAdapter(private val ratesList: ArrayList<Currency>, context: Cont
     }
 
     override fun getItemCount(): Int = ratesList.count() // this accounts for the header item as well
+
+    fun getItem(position: Int): Currency? = ratesList[position]
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         when (holder) {
@@ -61,14 +89,9 @@ class RatesListAdapter(private val ratesList: ArrayList<Currency>, context: Cont
 
     private fun populateListItem(holder: RatesListViewHolder, position: Int) {
         val entry: Currency = ratesList[position]
+
         holder.view.countryCurrency.text = entry.extendedCurrency.name
         holder.view.currencyCode.text = entry.code
-//        holder.view.countryFlag.apply {
-//            this.setImageResource(
-//                if (entry.country.flag == -1) R.drawable.ic_country_flag_placeholder
-//                else entry.country.flag
-//            )
-//        }
         Glide.with(holder.view).load(entry.extendedCurrency.flag)
             .apply(Configuration.GLIDE_IMAGE_OPTIONS)
             .into(holder.view.countryFlag)

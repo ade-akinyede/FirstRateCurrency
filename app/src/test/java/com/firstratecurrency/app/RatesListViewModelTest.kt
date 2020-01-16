@@ -33,7 +33,7 @@ class RatesListViewModelTest {
 
     private val application: Application = Mockito.mock(Application::class.java)
 
-    var ratesListViewModel = RatesListViewModel(application, test = true)
+    var ratesListViewModel = RatesListViewModel(application, true)
 
     @Before
     fun setup() {

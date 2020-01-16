@@ -13,7 +13,7 @@ import io.reactivex.observers.DisposableSingleObserver
 import io.reactivex.schedulers.Schedulers
 import javax.inject.Inject
 
-class RatesListViewModel(app: Application, private val test: Boolean = false): AndroidViewModel(app) {
+class RatesListViewModel(app: Application): AndroidViewModel(app) {
 
     val rates by lazy { MutableLiveData<List<Currency>>() }
     val loading by lazy { MutableLiveData<Boolean>() }
@@ -23,16 +23,18 @@ class RatesListViewModel(app: Application, private val test: Boolean = false): A
     @Inject
     lateinit var ratesApiService:RatesApiService
 
+    private var test: Boolean? = null
+
+    constructor(app: Application, isTest: Boolean) : this(app) {
+        test = isTest
+    }
+
     init {
-        if (!test) {
-            refresh()
-        }
+        test ?: refresh()
     }
 
     private fun inject() {
-        if (!test) {
-            DaggerViewModelComponent.create().inject(this)
-        }
+        test ?: DaggerViewModelComponent.create().inject(this)
     }
 
     fun refresh() {
