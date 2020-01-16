@@ -3,6 +3,7 @@ package com.firstratecurrency.app
 import com.firstratecurrency.app.data.RatesApiDeserializer
 import com.google.gson.Gson
 import com.google.gson.JsonElement
+import org.json.JSONObject
 import org.junit.Assert
 import org.junit.Test
 
@@ -22,7 +23,7 @@ class RatesApiDeserializerTest {
                 "CNY":7.9663,
                 "CZK":25.784,
                 "DKK":7.4766,
-                "GBP":0.90064,
+                "GBP":0.90064,a
                 "HKD":9.1568,
                 "HRK":7.4539,
                 "HUF":327.36,
@@ -55,6 +56,8 @@ class RatesApiDeserializerTest {
         val jsonElement = Gson().fromJson(SAMPLE_API_DATA, JsonElement::class.java)
         val rates = RatesApiDeserializer().deserialize(jsonElement, null, null)
 
-        Assert.assertEquals("EUR", rates.base)
+        Assert.assertEquals(jsonElement.asJsonObject.get("base").asString, rates.base)
+        Assert.assertEquals(jsonElement.asJsonObject.get("date").asString, rates.date)
+        Assert.assertEquals(jsonElement.asJsonObject.get("rates").asJsonObject.entrySet().size, rates.currencies.size)
     }
 }
