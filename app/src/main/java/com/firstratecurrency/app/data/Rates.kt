@@ -9,10 +9,10 @@ data class Rates(
 data class Currency(
     val code: String,
     val rate: Double,
-    val country: Country
+    val extendedCurrency: ExtendedCurrency
 )
 
-data class Country (
+data class ExtendedCurrency (
     val name: String,
     val flag: Int
 )

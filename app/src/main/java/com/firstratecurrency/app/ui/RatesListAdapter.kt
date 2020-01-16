@@ -6,7 +6,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.bumptech.glide.load.DecodeFormat
 import com.bumptech.glide.load.resource.bitmap.CircleCrop
 import com.bumptech.glide.request.RequestOptions
 import com.firstratecurrency.app.R
@@ -62,7 +61,7 @@ class RatesListAdapter(private val ratesList: ArrayList<Currency>, context: Cont
 
     private fun populateListItem(holder: RatesListViewHolder, position: Int) {
         val entry: Currency = ratesList[position]
-        holder.view.countryCurrency.text = entry.country.name
+        holder.view.countryCurrency.text = entry.extendedCurrency.name
         holder.view.currencyCode.text = entry.code
 //        holder.view.countryFlag.apply {
 //            this.setImageResource(
@@ -70,7 +69,7 @@ class RatesListAdapter(private val ratesList: ArrayList<Currency>, context: Cont
 //                else entry.country.flag
 //            )
 //        }
-        Glide.with(holder.view).load(entry.country.flag)
+        Glide.with(holder.view).load(entry.extendedCurrency.flag)
             .apply(Configuration.GLIDE_IMAGE_OPTIONS)
             .into(holder.view.countryFlag)
 

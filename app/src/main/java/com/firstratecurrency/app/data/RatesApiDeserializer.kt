@@ -25,8 +25,8 @@ class RatesApiDeserializer: JsonDeserializer<Rates> {
             Timber.d("Transforming rates to list of Currency...")
             this.entrySet().iterator().forEach {
                 val extendedCurrency = ExtendedCurrency.getCurrencyByISO(it.key)
-                val country = Country(extendedCurrency.name, extendedCurrency.flag)
-                ratesList.add(Currency(it.key, it.value.asDouble, country))
+                val ratesExtendedCurrency = ExtendedCurrency(extendedCurrency.name, extendedCurrency.flag)
+                ratesList.add(Currency(it.key, it.value.asDouble, ratesExtendedCurrency))
             }
         }
 
