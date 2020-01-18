@@ -33,12 +33,14 @@ class RatesListViewModelTest {
 
     private val application: Application = Mockito.mock(Application::class.java)
 
-    var ratesListViewModel = RatesListViewModel(application, true)
+    private lateinit var ratesListViewModel: RatesListViewModel
 
     @Before
     fun setup() {
         MockitoAnnotations.initMocks(this)
+        FRCApp.Test.running = true
 
+        ratesListViewModel = RatesListViewModel(application)
         DaggerViewModelComponent.builder()
             .ratesApiModule(RatesApiModuleTest(ratesApiService))
             .build()

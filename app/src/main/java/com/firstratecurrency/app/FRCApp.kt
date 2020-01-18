@@ -6,6 +6,10 @@ import timber.log.Timber
 
 class FRCApp: Application() {
 
+    object Test {
+        var running = false
+    }
+
     override fun onCreate() {
         super.onCreate()
         // Debug and verbose levels are not logged for release builds
