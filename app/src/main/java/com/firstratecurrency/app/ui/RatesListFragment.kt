@@ -16,7 +16,7 @@ import com.firstratecurrency.app.data.Currency
 import kotlinx.android.synthetic.main.fragment_rates_list.*
 import timber.log.Timber
 
-class RatesListFragment: Fragment(), RatesListAdapter.RowListener {
+class RatesListFragment: Fragment() {
 
     private lateinit var ratesViewModel: RatesListViewModel
     private lateinit var ratesListAdapter: RatesListAdapter
@@ -39,19 +39,13 @@ class RatesListFragment: Fragment(), RatesListAdapter.RowListener {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        ratesListAdapter = RatesListAdapter(arrayListOf(), requireContext(), this)
+        ratesListAdapter = RatesListAdapter(requireContext())
         ratesViewModel = ViewModelProviders.of(this).get(RatesListViewModel::class.java)
         ratesViewModel.rates.observe(viewLifecycleOwner, ratesListDataObserver)
 
         ratesList.apply {
             layoutManager = LinearLayoutManager(context)
             adapter = ratesListAdapter
-        }
-    }
-
-    override fun onRowEntryClickListener(position: Int) {
-        ratesListAdapter.getItem(position)?.apply {
-            Toast.makeText(requireContext(), this.code, Toast.LENGTH_SHORT).show()
         }
     }
 }
