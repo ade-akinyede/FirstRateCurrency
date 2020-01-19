@@ -23,9 +23,36 @@ class RatesListFragment: Fragment() {
 
     private val ratesListDataObserver = Observer<List<Currency>> { list ->
         list?.let {
+            ratesList.visibility = View.VISIBLE
+            listLoading.visibility = View.GONE
+            listError.visibility = View.GONE
             Timber.i("Rates update received successfully")
             ratesListAdapter.updateList(it)
         } ?: Timber.e("Rates update received but is empty")
+    }
+
+    private val ratesListLoadingObserver = Observer<Boolean> { isLoading ->
+        // Only show loading when the list is empty
+        if (ratesListAdapter.itemCount == 0) {
+            if (isLoading) {
+                listLoading.visibility = View.VISIBLE
+                ratesList.visibility = View.GONE
+                listError.visibility = View.GONE
+            } else {
+                listLoading.visibility = View.GONE
+            }
+        }
+    }
+
+    private val ratesListErrorObserver = Observer<Boolean> { isError ->
+        // Only show error when the list is empty
+        if (ratesListAdapter.itemCount == 0 && isError) {
+            listError.visibility = View.VISIBLE
+            listLoading.visibility = View.GONE
+            ratesList.visibility = View.GONE
+        }
+
+        // TODO show error in a non-intrusive way
     }
 
     override fun onCreateView(
@@ -41,7 +68,10 @@ class RatesListFragment: Fragment() {
 
         ratesListAdapter = RatesListAdapter(requireContext())
         ratesViewModel = ViewModelProviders.of(this).get(RatesListViewModel::class.java)
+
         ratesViewModel.rates.observe(viewLifecycleOwner, ratesListDataObserver)
+        ratesViewModel.loading.observe(viewLifecycleOwner, ratesListLoadingObserver)
+        ratesViewModel.loadError.observe(viewLifecycleOwner, ratesListErrorObserver)
 
         ratesList.apply {
             layoutManager = LinearLayoutManager(context)

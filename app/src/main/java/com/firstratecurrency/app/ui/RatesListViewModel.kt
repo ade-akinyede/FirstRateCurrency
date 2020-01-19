@@ -13,6 +13,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.observers.DisposableSingleObserver
 import io.reactivex.schedulers.Schedulers
+import timber.log.Timber
 import javax.inject.Inject
 
 class RatesListViewModel(app: Application): AndroidViewModel(app) {
@@ -49,26 +50,39 @@ class RatesListViewModel(app: Application): AndroidViewModel(app) {
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeWith(object: DisposableSingleObserver<Rates>() {
                     override fun onSuccess(ratesList: Rates) {
-                        if (ratesList.currencies.isNotEmpty()) {
-                            rates.value = ratesList.currencies
-                            loadError.value = false
-                            loading.value = false
-                        } else {
-                            loadError.value = true
-                            loading.value = false
-                            rates.value = null
-                        }
+                        onResponse(ratesList.currencies)
                     }
 
                     override fun onError(error: Throwable) {
-                        error.printStackTrace()
-                        loading.value = false
-                        rates.value = null
-                        loadError.value = true
+                        Timber.e(error)
+                        onError()
                     }
 
+                    override fun onStart() {
+                        onLoading()
+                    }
                 })
         )
+    }
+
+    private fun onResponse(result: List<Currency>) {
+        if (result.isNotEmpty()) {
+            rates.value = result
+            loadError.value = false
+            loading.value = false
+        } else {
+            onError()
+        }
+    }
+
+    private fun onLoading() {
+        loading.value = true
+    }
+
+    private fun onError() {
+        loading.value = false
+        rates.value = null
+        loadError.value = true
     }
 
     override fun onCleared() {
