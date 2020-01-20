@@ -1,9 +1,9 @@
 package com.firstratecurrency.app.ui
 
 import android.app.Application
+import androidx.collection.ArrayMap
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
-import com.firstratecurrency.app.BuildConfig
 import com.firstratecurrency.app.FRCApp
 import com.firstratecurrency.app.data.Currency
 import com.firstratecurrency.app.data.Rates
@@ -18,9 +18,9 @@ import javax.inject.Inject
 
 class RatesListViewModel(app: Application): AndroidViewModel(app) {
 
-    val rates by lazy { MutableLiveData<List<Currency>>() }
-    val loading by lazy { MutableLiveData<Boolean>() }
-    val loadError by lazy { MutableLiveData<Boolean>() }
+    private val rates by lazy { MutableLiveData<ArrayMap<String, Currency>>() }
+    private val loading by lazy { MutableLiveData<Boolean>() }
+    private val loadError by lazy { MutableLiveData<Boolean>() }
 
     private val disposable = CompositeDisposable()
     @Inject
@@ -42,6 +42,10 @@ class RatesListViewModel(app: Application): AndroidViewModel(app) {
         inject()
         getRates()
     }
+
+    fun getRatesLiveData() = rates
+    fun getRatesLoadingState() = loading
+    fun getLoadErrorState() = loadError
 
     private fun getRates() {
         disposable.add(
@@ -67,7 +71,12 @@ class RatesListViewModel(app: Application): AndroidViewModel(app) {
 
     private fun onResponse(result: List<Currency>) {
         if (result.isNotEmpty()) {
-            rates.value = result
+            val mapper = ArrayMap<String, Currency>(result.size)
+            result.map {
+                mapper.put(it.code, it)
+            }
+
+            rates.value = mapper
             loadError.value = false
             loading.value = false
         } else {

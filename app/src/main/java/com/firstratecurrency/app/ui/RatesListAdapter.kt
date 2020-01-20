@@ -8,6 +8,7 @@ import android.view.MotionEvent
 import android.view.MotionEvent.*
 import android.view.View
 import android.view.ViewGroup
+import androidx.collection.ArrayMap
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.CircleCrop
@@ -112,14 +113,25 @@ class RatesListAdapter(private val context: Context): RecyclerView.Adapter<Recyc
         holder.view.currencyExchangeEntry.setText(currencyItem.displayedCurrencyRate)
     }
 
-    fun updateList(updatedList: List<Currency>) {
-        ratesList.clear()
-        ratesList.add(HeaderItem(context.getString(R.string.title_rates)))
-        updatedList.map {
-            ratesList.add(CurrencyItem(it))
+    fun updateList(updatedList: ArrayMap<String, Currency>) {
+        // create the list anew if empty, otherwise update the current entries
+        if (ratesList.size > 0) {
+            ratesList.map { listItem ->
+                if (listItem is CurrencyItem) {
+                    updatedList[listItem.currency.code]?.apply {
+                        listItem.currency.rate = this.rate
+                    }
+                }
+            }
+        } else {
+            Timber.d("UI (list) updated with new rates")
+            ratesList.add(HeaderItem(context.getString(R.string.title_rates)))
+            updatedList.map {
+                ratesList.add(CurrencyItem(it.value))
+            }
         }
+
         notifyDataSetChanged()
-        Timber.d("UI (list) updated with new rates")
     }
 
     private fun makeFirstResponder(position: Int) {

@@ -8,7 +8,7 @@ data class Rates(
 
 data class Currency(
     val code: String,
-    val rate: Double,
+    var rate: Double,
     val extendedCurrency: ExtendedCurrency
 )
 

@@ -4,13 +4,11 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
-import androidx.core.view.get
+import androidx.collection.ArrayMap
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.firstratecurrency.app.FRCApp
 import com.firstratecurrency.app.R
 import com.firstratecurrency.app.data.Currency
 import kotlinx.android.synthetic.main.fragment_rates_list.*
@@ -21,7 +19,7 @@ class RatesListFragment: Fragment() {
     private lateinit var ratesViewModel: RatesListViewModel
     private lateinit var ratesListAdapter: RatesListAdapter
 
-    private val ratesListDataObserver = Observer<List<Currency>> { list ->
+    private val ratesListDataObserver = Observer<ArrayMap<String, Currency>> { list ->
         list?.let {
             ratesList.visibility = View.VISIBLE
             listLoading.visibility = View.GONE
@@ -69,9 +67,9 @@ class RatesListFragment: Fragment() {
         ratesListAdapter = RatesListAdapter(requireContext())
         ratesViewModel = ViewModelProviders.of(this).get(RatesListViewModel::class.java)
 
-        ratesViewModel.rates.observe(viewLifecycleOwner, ratesListDataObserver)
-        ratesViewModel.loading.observe(viewLifecycleOwner, ratesListLoadingObserver)
-        ratesViewModel.loadError.observe(viewLifecycleOwner, ratesListErrorObserver)
+        ratesViewModel.getRatesLiveData().observe(viewLifecycleOwner, ratesListDataObserver)
+        ratesViewModel.getRatesLoadingState().observe(viewLifecycleOwner, ratesListLoadingObserver)
+        ratesViewModel.getLoadErrorState().observe(viewLifecycleOwner, ratesListErrorObserver)
 
         ratesList.apply {
             layoutManager = LinearLayoutManager(context)
