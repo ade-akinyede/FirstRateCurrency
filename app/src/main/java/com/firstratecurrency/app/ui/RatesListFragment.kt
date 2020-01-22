@@ -14,12 +14,12 @@ import com.firstratecurrency.app.data.Currency
 import kotlinx.android.synthetic.main.fragment_rates_list.*
 import timber.log.Timber
 
-class RatesListFragment: Fragment() {
+class RatesListFragment: Fragment(), RatesListAdapter.RatesChangeListener {
 
     private lateinit var ratesViewModel: RatesListViewModel
     private lateinit var ratesListAdapter: RatesListAdapter
 
-    private val ratesListDataObserver = Observer<ArrayMap<String, Currency>> { list ->
+    private val ratesListDataObserver = Observer<ArrayList<Currency>> { list ->
         list?.let {
             ratesList.visibility = View.VISIBLE
             listLoading.visibility = View.GONE
@@ -64,7 +64,7 @@ class RatesListFragment: Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        ratesListAdapter = RatesListAdapter(requireContext())
+        ratesListAdapter = RatesListAdapter(requireContext(), this)
         ratesViewModel = ViewModelProviders.of(this).get(RatesListViewModel::class.java)
 
         ratesViewModel.getRatesLiveData().observe(viewLifecycleOwner, ratesListDataObserver)
@@ -75,5 +75,13 @@ class RatesListFragment: Fragment() {
             layoutManager = LinearLayoutManager(context)
             adapter = ratesListAdapter
         }
+    }
+
+    override fun onFirstResponderChange(position: Int) {
+        ratesViewModel.movePositionToTop(position)
+    }
+
+    override fun onRateValueChange(value: Double) {
+        ratesViewModel.onRateValueChanged(value)
     }
 }

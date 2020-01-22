@@ -18,7 +18,7 @@ import javax.inject.Inject
 
 class RatesListViewModel(app: Application): AndroidViewModel(app) {
 
-    private val rates by lazy { MutableLiveData<ArrayMap<String, Currency>>() }
+    private val rates by lazy { MutableLiveData<ArrayList<Currency>>() }
     private val loading by lazy { MutableLiveData<Boolean>() }
     private val loadError by lazy { MutableLiveData<Boolean>() }
 
@@ -69,14 +69,23 @@ class RatesListViewModel(app: Application): AndroidViewModel(app) {
         )
     }
 
-    private fun onResponse(result: List<Currency>) {
+    private fun onResponse(result: LinkedHashMap<String, Currency>) {
         if (result.isNotEmpty()) {
-            val mapper = ArrayMap<String, Currency>(result.size)
-            result.map {
-                mapper.put(it.code, it)
+            rates.value = rates.value?.let { currencyList ->
+                // Update rates while maintaining the current ordering
+                // by cycling through the current (rates) list and mapping
+                // the result to the entry.
+                currencyList.map { entry ->
+                    result[entry.code]?.let { updatedCurrency ->
+                        entry.rate = updatedCurrency.rate
+                    }
+                }
+
+                currencyList
+            } ?: run {
+                result.values.toList() as ArrayList<Currency>
             }
 
-            rates.value = mapper
             loadError.value = false
             loading.value = false
         } else {
@@ -92,6 +101,21 @@ class RatesListViewModel(app: Application): AndroidViewModel(app) {
         loading.value = false
         rates.value = null
         loadError.value = true
+    }
+
+    fun movePositionToTop(position: Int) {
+        if (position > 0) {
+            rates.value = rates.value?.run {
+                // Remove and move to top position
+                val entry = this.removeAt(position)
+                this.add(0, entry)
+                this
+            }
+        }
+    }
+
+    fun onRateValueChanged(value: Double) {
+
     }
 
     override fun onCleared() {

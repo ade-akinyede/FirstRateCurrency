@@ -20,16 +20,21 @@ class RatesApiDeserializer: JsonDeserializer<Rates> {
 
         Timber.d("Extracting rates for transformation...")
         val rates = jsonObject?.get("rates")?.asJsonObject
-        val ratesList: MutableList<Currency> = mutableListOf()
+        // The data structure should maintain the order of insertion. LinkedHashMap does this.
+        val ratesMap: LinkedHashMap<String, Currency> = linkedMapOf()
+        // Insert the base currency
+        val baseExtendedCurrency = ExtendedCurrency.getCurrencyByISO(baseCurrency)
+        ratesMap[baseCurrency] = Currency(baseCurrency, 1.0, ExtendedCurrency(baseExtendedCurrency.name, baseExtendedCurrency.flag))
+
         rates?.apply {
             Timber.d("Transforming rates to list of Currency...")
             this.entrySet().iterator().forEach {
                 val extendedCurrency = ExtendedCurrency.getCurrencyByISO(it.key)
                 val ratesExtendedCurrency = ExtendedCurrency(extendedCurrency.name, extendedCurrency.flag)
-                ratesList.add(Currency(it.key, it.value.asDouble, ratesExtendedCurrency))
+                ratesMap[it.key] = Currency(it.key, it.value.asDouble, ratesExtendedCurrency)
             }
         }
 
-        return Rates(baseCurrency, date, ratesList)
+        return Rates(baseCurrency, date, ratesMap)
     }
 }

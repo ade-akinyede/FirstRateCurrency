@@ -9,18 +9,26 @@ import android.view.MotionEvent.*
 import android.view.View
 import android.view.ViewGroup
 import androidx.collection.ArrayMap
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.CircleCrop
 import com.bumptech.glide.request.RequestOptions
 import com.firstratecurrency.app.R
 import com.firstratecurrency.app.data.Currency
+import com.firstratecurrency.app.utils.RatesListDiffCallback
+import com.firstratecurrency.app.utils.calculateCurrencyValue
 import kotlinx.android.synthetic.main.list_header.view.*
 import kotlinx.android.synthetic.main.list_item_currency.view.*
 import timber.log.Timber
 import kotlin.collections.ArrayList
 
-class RatesListAdapter(private val context: Context): RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+class RatesListAdapter(context: Context, private val ratesChangeListener: RatesChangeListener): RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+
+    interface RatesChangeListener {
+        fun onFirstResponderChange(position: Int)
+        fun onRateValueChange(value: Double)
+    }
 
     class RatesHeaderViewHolder(var view: View): RecyclerView.ViewHolder(view)
 
@@ -58,7 +66,7 @@ class RatesListAdapter(private val context: Context): RecyclerView.Adapter<Recyc
     }
 
     object Configuration {
-        const val FIRST_RESPONDER_POSITION = 1
+        const val FIRST_RESPONDER_POSITION = 0
         const val TYPE_HEADER = 100
         const val TYPE_CURRENCY = 200
         val GLIDE_IMAGE_OPTIONS: RequestOptions =
@@ -68,7 +76,8 @@ class RatesListAdapter(private val context: Context): RecyclerView.Adapter<Recyc
                 .transform(CircleCrop())
     }
 
-    private val ratesList: ArrayList<RatesListItem> = arrayListOf()
+    private val ratesList: ArrayList<Currency> = arrayListOf()
+    private val HEADER_TITLE = context.getString(R.string.title_rates)
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         val inflater = LayoutInflater.from(parent.context)
@@ -79,30 +88,28 @@ class RatesListAdapter(private val context: Context): RecyclerView.Adapter<Recyc
     }
 
     override fun getItemViewType(position: Int): Int {
-        return when (getItem(position)) {
-            is HeaderItem -> Configuration.TYPE_HEADER
-            else -> Configuration.TYPE_CURRENCY
-        }
+        return Configuration.TYPE_CURRENCY
+//        return when (position) {
+//            0 -> Configuration.TYPE_HEADER
+//            else -> Configuration.TYPE_CURRENCY
+//        }
     }
 
-    override fun getItemCount(): Int = ratesList.size
-
-    private fun getItem(position: Int): RatesListItem? = ratesList[position]
+    override fun getItemCount(): Int = ratesList.size//if (ratesList.isEmpty()) 0 else ratesList.size + 1 // Header included
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         when (holder) {
-            is RatesHeaderViewHolder -> displayHeader(holder, position)
-            is RatesListViewHolder -> displayCurrencyItem(holder, position)
+            is RatesHeaderViewHolder -> displayHeader(holder)
+            is RatesListViewHolder -> displayCurrencyItem(holder, position) // Header excluded
         }
     }
 
-    private fun displayHeader(holder: RatesHeaderViewHolder, position: Int) {
-        holder.view.listHeaderText.text = (ratesList[position] as HeaderItem).title
+    private fun displayHeader(holder: RatesHeaderViewHolder) {
+        holder.view.listHeaderText.text = HEADER_TITLE
     }
 
     private fun displayCurrencyItem(holder: RatesListViewHolder, position: Int) {
-        val currencyItem = ratesList[position] as CurrencyItem
-        val currency = currencyItem.currency
+        val currency = ratesList[position]
 
         holder.view.countryCurrency.text = currency.extendedCurrency.name
         holder.view.currencyCode.text = currency.code
@@ -110,59 +117,72 @@ class RatesListAdapter(private val context: Context): RecyclerView.Adapter<Recyc
             .apply(Configuration.GLIDE_IMAGE_OPTIONS)
             .into(holder.view.countryFlag)
 
-        holder.view.currencyExchangeEntry.setText(currencyItem.displayedCurrencyRate)
+        val displayValue = String.format("%.4f", calculateCurrencyValue(currency))
+        holder.view.currencyExchangeEntry.setText(displayValue)
     }
 
-    fun updateList(updatedList: ArrayMap<String, Currency>) {
-        // create the list anew if empty, otherwise update the current entries
-        if (ratesList.size > 0) {
-            ratesList.map { listItem ->
-                if (listItem is CurrencyItem) {
-                    updatedList[listItem.currency.code]?.apply {
-                        listItem.currency.rate = this.rate
-                    }
-                }
-            }
+    fun updateList(updatedList: ArrayList<Currency>) {
+        // if list is empty, simply update rather than run a diff
+        if (ratesList.isEmpty()) {
+            ratesList.addAll(updatedList)
+            notifyDataSetChanged()
         } else {
-            Timber.d("UI (list) updated with new rates")
-            ratesList.add(HeaderItem(context.getString(R.string.title_rates)))
-            updatedList.map {
-                ratesList.add(CurrencyItem(it.value))
-            }
+            val diffCallback = RatesListDiffCallback(ratesList, updatedList)
+            val diffResult = DiffUtil.calculateDiff(diffCallback, true)
+            ratesList.clear()
+            ratesList.addAll(updatedList)
+            diffResult.dispatchUpdatesTo(this)
         }
 
-        notifyDataSetChanged()
+        // create the list anew if empty, otherwise update the current entries
+//        if (ratesList.size > 0) {
+//
+//        } else {
+//            Timber.d("UI (list) updated with new rates")
+//            ratesList.add(HeaderItem(context.getString(R.string.title_rates)))
+//            updatedList.map {
+//                ratesList.add(CurrencyItem(it))
+//            }
+//        }
+//
+//        notifyDataSetChanged()
     }
 
     private fun makeFirstResponder(position: Int) {
         // Move to top of row if not already
         if (position > Configuration.FIRST_RESPONDER_POSITION) {
-            ratesList[position].apply {
-                ratesList.removeAt(position)
-                ratesList.add(Configuration.FIRST_RESPONDER_POSITION, this)
-                notifyItemMoved(position, Configuration.FIRST_RESPONDER_POSITION)
-            }
+            ratesChangeListener.onFirstResponderChange(position)
+//            ratesList[position].apply {
+//                ratesList.removeAt(position)
+//                ratesList.add(Configuration.FIRST_RESPONDER_POSITION, this)
+//                notifyItemMoved(position, Configuration.FIRST_RESPONDER_POSITION)
+//            }
         }
     }
 
     private fun checkAndConvert(position: Int, value: String) {
         // Only run conversion for first responder
-        if (position == Configuration.FIRST_RESPONDER_POSITION) {
-            val firstItem = ratesList[position] as CurrencyItem
-
-            if (firstItem.displayedCurrencyRate != value) {
-                firstItem.displayedCurrencyRate = value
-                val baseRate = firstItem.currency.rate
-                val valueDouble = value.toDouble()
-
-                for (index in Configuration.FIRST_RESPONDER_POSITION + 1 until ratesList.size) {
-                    (ratesList[index] as CurrencyItem).apply {
-                        this.displayedCurrencyRate = String.format("%.4f", (this.currency.rate / baseRate) * valueDouble)
-                    }
-                }
-
-                notifyItemRangeChanged(Configuration.FIRST_RESPONDER_POSITION+1, ratesList.size)
+        if (position == 0) {
+            val currentValue = calculateCurrencyValue(ratesList[0])
+            val enteredValue = value.toDouble()
+            if (currentValue != enteredValue) {
+                ratesChangeListener.onRateValueChange(enteredValue)
             }
+//            val firstItem = ratesList[position] as CurrencyItem
+//
+//            if (firstItem.displayedCurrencyRate != value) {
+//                firstItem.displayedCurrencyRate = value
+//                val baseRate = firstItem.currency.rate
+//                val valueDouble = value.toDouble()
+//
+//                for (index in Configuration.FIRST_RESPONDER_POSITION + 1 until ratesList.size) {
+//                    (ratesList[index] as CurrencyItem).apply {
+//                        this.displayedCurrencyRate = String.format("%.4f", (this.currency.rate / baseRate) * valueDouble)
+//                    }
+//                }
+//
+//                notifyItemRangeChanged(Configuration.FIRST_RESPONDER_POSITION+1, ratesList.size)
+//            }
         }
     }
 }
