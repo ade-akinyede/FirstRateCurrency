@@ -128,35 +128,17 @@ class RatesListAdapter(context: Context, private val ratesChangeListener: RatesC
             notifyDataSetChanged()
         } else {
             val diffCallback = RatesListDiffCallback(ratesList, updatedList)
-            val diffResult = DiffUtil.calculateDiff(diffCallback, true)
+            val diffResult = DiffUtil.calculateDiff(diffCallback)
             ratesList.clear()
             ratesList.addAll(updatedList)
             diffResult.dispatchUpdatesTo(this)
         }
-
-        // create the list anew if empty, otherwise update the current entries
-//        if (ratesList.size > 0) {
-//
-//        } else {
-//            Timber.d("UI (list) updated with new rates")
-//            ratesList.add(HeaderItem(context.getString(R.string.title_rates)))
-//            updatedList.map {
-//                ratesList.add(CurrencyItem(it))
-//            }
-//        }
-//
-//        notifyDataSetChanged()
     }
 
     private fun makeFirstResponder(position: Int) {
         // Move to top of row if not already
         if (position > Configuration.FIRST_RESPONDER_POSITION) {
             ratesChangeListener.onFirstResponderChange(position)
-//            ratesList[position].apply {
-//                ratesList.removeAt(position)
-//                ratesList.add(Configuration.FIRST_RESPONDER_POSITION, this)
-//                notifyItemMoved(position, Configuration.FIRST_RESPONDER_POSITION)
-//            }
         }
     }
 
@@ -168,21 +150,6 @@ class RatesListAdapter(context: Context, private val ratesChangeListener: RatesC
             if (currentValue != enteredValue) {
                 ratesChangeListener.onRateValueChange(enteredValue)
             }
-//            val firstItem = ratesList[position] as CurrencyItem
-//
-//            if (firstItem.displayedCurrencyRate != value) {
-//                firstItem.displayedCurrencyRate = value
-//                val baseRate = firstItem.currency.rate
-//                val valueDouble = value.toDouble()
-//
-//                for (index in Configuration.FIRST_RESPONDER_POSITION + 1 until ratesList.size) {
-//                    (ratesList[index] as CurrencyItem).apply {
-//                        this.displayedCurrencyRate = String.format("%.4f", (this.currency.rate / baseRate) * valueDouble)
-//                    }
-//                }
-//
-//                notifyItemRangeChanged(Configuration.FIRST_RESPONDER_POSITION+1, ratesList.size)
-//            }
         }
     }
 }
