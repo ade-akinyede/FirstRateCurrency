@@ -1,7 +1,6 @@
 package com.firstratecurrency.app.ui
 
 import android.app.Application
-import androidx.collection.ArrayMap
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import com.firstratecurrency.app.FRCApp
@@ -9,7 +8,6 @@ import com.firstratecurrency.app.data.Currency
 import com.firstratecurrency.app.data.Rates
 import com.firstratecurrency.app.data.RatesApiService
 import com.firstratecurrency.app.di.component.DaggerViewModelComponent
-import com.firstratecurrency.app.utils.calculateCurrencyValue
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.observers.DisposableSingleObserver
@@ -118,7 +116,7 @@ class RatesListViewModel(app: Application): AndroidViewModel(app) {
     fun onRateValueChanged(value: Double) {
         rates.value = rates.value?.let { list ->
             val firstResponder = list[0]
-            val currentValue = calculateCurrencyValue(firstResponder)
+            val currentValue = firstResponder.getCurrencyValue()
             if (currentValue != value) {
                list.map { entry ->
                    entry.refValue = value

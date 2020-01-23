@@ -5,7 +5,7 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.MotionEvent
-import android.view.MotionEvent.*
+import android.view.MotionEvent.ACTION_UP
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
@@ -16,10 +16,8 @@ import com.bumptech.glide.request.RequestOptions
 import com.firstratecurrency.app.R
 import com.firstratecurrency.app.data.Currency
 import com.firstratecurrency.app.utils.RatesListDiffCallback
-import com.firstratecurrency.app.utils.calculateCurrencyValue
 import kotlinx.android.synthetic.main.list_header.view.*
 import kotlinx.android.synthetic.main.list_item_currency.view.*
-import kotlin.collections.ArrayList
 
 class RatesListAdapter(context: Context, private val ratesChangeListener: RatesChangeListener): RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
@@ -115,7 +113,7 @@ class RatesListAdapter(context: Context, private val ratesChangeListener: RatesC
             .apply(Configuration.GLIDE_IMAGE_OPTIONS)
             .into(holder.view.countryFlag)
 
-        val displayValue = String.format("%.4f", calculateCurrencyValue(currency))
+        val displayValue = String.format("%.4f", currency.getCurrencyValue())
         holder.view.currencyExchangeEntry.setText(displayValue)
     }
 
@@ -144,7 +142,7 @@ class RatesListAdapter(context: Context, private val ratesChangeListener: RatesC
         // Only run conversion for first responder
         if (position == 0) {
             val firstResponder = currenciesList[0]
-            val currentValue = calculateCurrencyValue(firstResponder)
+            val currentValue = firstResponder.getCurrencyValue()
             val enteredValue = value.toDouble()
             if (currentValue != enteredValue) {
                 // update the changed position data in the list so that the diffUtil
