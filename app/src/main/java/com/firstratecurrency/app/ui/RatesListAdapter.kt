@@ -8,7 +8,6 @@ import android.view.MotionEvent
 import android.view.MotionEvent.*
 import android.view.View
 import android.view.ViewGroup
-import androidx.collection.ArrayMap
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -20,7 +19,6 @@ import com.firstratecurrency.app.utils.RatesListDiffCallback
 import com.firstratecurrency.app.utils.calculateCurrencyValue
 import kotlinx.android.synthetic.main.list_header.view.*
 import kotlinx.android.synthetic.main.list_item_currency.view.*
-import timber.log.Timber
 import kotlin.collections.ArrayList
 
 class RatesListAdapter(context: Context, private val ratesChangeListener: RatesChangeListener): RecyclerView.Adapter<RecyclerView.ViewHolder>() {
@@ -76,7 +74,7 @@ class RatesListAdapter(context: Context, private val ratesChangeListener: RatesC
                 .transform(CircleCrop())
     }
 
-    private val ratesList: ArrayList<Currency> = arrayListOf()
+    private val currenciesList: ArrayList<Currency> = arrayListOf()
     private val HEADER_TITLE = context.getString(R.string.title_rates)
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
@@ -95,7 +93,7 @@ class RatesListAdapter(context: Context, private val ratesChangeListener: RatesC
 //        }
     }
 
-    override fun getItemCount(): Int = ratesList.size//if (ratesList.isEmpty()) 0 else ratesList.size + 1 // Header included
+    override fun getItemCount(): Int = currenciesList.size//if (ratesList.isEmpty()) 0 else ratesList.size + 1 // Header included
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         when (holder) {
@@ -109,7 +107,7 @@ class RatesListAdapter(context: Context, private val ratesChangeListener: RatesC
     }
 
     private fun displayCurrencyItem(holder: RatesListViewHolder, position: Int) {
-        val currency = ratesList[position]
+        val currency = currenciesList[position]
 
         holder.view.countryCurrency.text = currency.extendedCurrency.name
         holder.view.currencyCode.text = currency.code
@@ -123,14 +121,14 @@ class RatesListAdapter(context: Context, private val ratesChangeListener: RatesC
 
     fun updateList(updatedList: ArrayList<Currency>) {
         // if list is empty, simply update rather than run a diff
-        if (ratesList.isEmpty()) {
-            ratesList.addAll(updatedList)
+        if (currenciesList.isEmpty()) {
+            currenciesList.addAll(updatedList)
             notifyDataSetChanged()
         } else {
-            val diffCallback = RatesListDiffCallback(ratesList, updatedList)
+            val diffCallback = RatesListDiffCallback(currenciesList, updatedList)
             val diffResult = DiffUtil.calculateDiff(diffCallback)
-            ratesList.clear()
-            ratesList.addAll(updatedList)
+            currenciesList.clear()
+            currenciesList.addAll(updatedList)
             diffResult.dispatchUpdatesTo(this)
         }
     }
@@ -145,9 +143,13 @@ class RatesListAdapter(context: Context, private val ratesChangeListener: RatesC
     private fun checkAndConvert(position: Int, value: String) {
         // Only run conversion for first responder
         if (position == 0) {
-            val currentValue = calculateCurrencyValue(ratesList[0])
+            val firstResponder = currenciesList[0]
+            val currentValue = calculateCurrencyValue(firstResponder)
             val enteredValue = value.toDouble()
             if (currentValue != enteredValue) {
+                // update the changed position data in the list so that the diffUtil
+                // doesn't register a change
+                firstResponder.refValue = enteredValue
                 ratesChangeListener.onRateValueChange(enteredValue)
             }
         }

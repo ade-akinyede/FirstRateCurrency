@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.collection.ArrayMap
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
@@ -24,8 +23,8 @@ class RatesListFragment: Fragment(), RatesListAdapter.RatesChangeListener {
             ratesList.visibility = View.VISIBLE
             listLoading.visibility = View.GONE
             listError.visibility = View.GONE
-            Timber.i("Rates update received successfully")
-            ratesListAdapter.updateList(it)
+            // Pass a copy of the live data rather than reference for proper change notification and handling.
+            ratesListAdapter.updateList(it.toList().map { entry -> entry.copy() } as ArrayList<Currency>)
         } ?: Timber.e("Rates update received but is empty")
     }
 

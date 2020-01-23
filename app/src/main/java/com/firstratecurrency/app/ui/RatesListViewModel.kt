@@ -108,25 +108,25 @@ class RatesListViewModel(app: Application): AndroidViewModel(app) {
         if (position > 0) {
             rates.value = rates.value?.run {
                 // Remove and move to top position
-                val entry = this.removeAt(position)
-                this.add(0, entry)
+//                val entry = this.removeAt(position)
+                this.add(0, this.removeAt(position))
                 this
             }
         }
     }
 
     fun onRateValueChanged(value: Double) {
-        rates.value = rates.value?.run {
-            val firstResponder = this[0]
+        rates.value = rates.value?.let { list ->
+            val firstResponder = list[0]
             val currentValue = calculateCurrencyValue(firstResponder)
             if (currentValue != value) {
-               this.map {
-                   it.refValue = value
-                   it.refRate = firstResponder.rate
+               list.map { entry ->
+                   entry.refValue = value
+                   entry.refRate = firstResponder.rate
                }
             }
 
-            this
+            list
         }
     }
 
