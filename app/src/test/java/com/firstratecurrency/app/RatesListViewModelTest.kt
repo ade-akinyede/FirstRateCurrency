@@ -2,12 +2,12 @@ package com.firstratecurrency.app
 
 import android.app.Application
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import com.firstratecurrency.app.data.ExtendedCurrency
-import com.firstratecurrency.app.data.Currency
-import com.firstratecurrency.app.data.Rates
-import com.firstratecurrency.app.data.RatesApiService
-import com.firstratecurrency.app.di.component.DaggerViewModelComponent
-import com.firstratecurrency.app.ui.RatesListViewModel
+import com.firstratecurrency.app.data.model.CurrencyMetadata
+import com.firstratecurrency.app.data.model.Currency
+import com.firstratecurrency.app.data.model.Rates
+import com.firstratecurrency.app.data.network.RatesApiService
+import com.firstratecurrency.app.di.component.DaggerRatesRepositoryComponent
+import com.firstratecurrency.app.viewmodels.RatesListViewModel
 import io.reactivex.Scheduler
 import io.reactivex.Single
 import io.reactivex.android.plugins.RxAndroidPlugins
@@ -40,8 +40,9 @@ class RatesListViewModelTest {
         MockitoAnnotations.initMocks(this)
         FRCApp.Test.running = true
 
-        ratesListViewModel = RatesListViewModel(application)
-        DaggerViewModelComponent.builder()
+        ratesListViewModel =
+            RatesListViewModel(application)
+        DaggerRatesRepositoryComponent.builder()
             .ratesApiModule(RatesApiModuleTest(ratesApiService))
             .build()
             .inject(ratesListViewModel)
@@ -63,8 +64,13 @@ class RatesListViewModelTest {
 
     @Test
     fun getRatesSuccess() {
-        val currency = Currency("EUR", 1.83, ExtendedCurrency("EU", 1))
-        val rates = Rates("", "", listOf(currency))
+        val currency = Currency(
+            "EUR",
+            1.83,
+            CurrencyMetadata("EU", 1)
+        )
+        val rates =
+            Rates("", "")
 
         val testSingle = Single.just(rates)
         Mockito.`when`(ratesApiService.getRates()).thenReturn(testSingle)

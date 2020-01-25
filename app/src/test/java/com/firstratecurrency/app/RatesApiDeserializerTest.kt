@@ -1,9 +1,8 @@
 package com.firstratecurrency.app
 
-import com.firstratecurrency.app.data.RatesApiDeserializer
+import com.firstratecurrency.app.data.network.RatesApiDeserializer
 import com.google.gson.Gson
 import com.google.gson.JsonElement
-import org.json.JSONObject
 import org.junit.Assert
 import org.junit.Test
 
@@ -54,7 +53,8 @@ class RatesApiDeserializerTest {
     @Test
     fun deserializesRatesApi() {
         val jsonElement = Gson().fromJson(SAMPLE_API_DATA, JsonElement::class.java)
-        val rates = RatesApiDeserializer().deserialize(jsonElement, null, null)
+        val rates = RatesApiDeserializer()
+            .deserialize(jsonElement, null, null)
 
         Assert.assertEquals(jsonElement.asJsonObject.get("base").asString, rates.base)
         Assert.assertEquals(jsonElement.asJsonObject.get("date").asString, rates.date)

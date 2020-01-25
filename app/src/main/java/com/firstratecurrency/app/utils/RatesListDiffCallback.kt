@@ -1,7 +1,7 @@
 package com.firstratecurrency.app.utils
 
 import androidx.recyclerview.widget.DiffUtil
-import com.firstratecurrency.app.data.Currency
+import com.firstratecurrency.app.data.model.Currency
 
 class RatesListDiffCallback(private val oldList: ArrayList<Currency>, private val newList: ArrayList<Currency>):
     DiffUtil.Callback() {

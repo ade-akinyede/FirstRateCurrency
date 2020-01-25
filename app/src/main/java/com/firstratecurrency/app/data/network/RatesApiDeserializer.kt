@@ -1,9 +1,10 @@
-package com.firstratecurrency.app.data
+package com.firstratecurrency.app.data.network
 
+import com.firstratecurrency.app.data.model.Currency
+import com.firstratecurrency.app.data.model.Rates
 import com.google.gson.JsonDeserializationContext
 import com.google.gson.JsonDeserializer
 import com.google.gson.JsonElement
-import com.mynameismidori.currencypicker.ExtendedCurrency
 import timber.log.Timber
 import java.lang.reflect.Type
 
@@ -23,18 +24,18 @@ class RatesApiDeserializer: JsonDeserializer<Rates> {
         // The data structure should maintain the order of insertion. LinkedHashMap does this.
         val ratesMap: LinkedHashMap<String, Currency> = linkedMapOf()
         // Insert the base currency
-        val baseExtendedCurrency = ExtendedCurrency.getCurrencyByISO(baseCurrency)
-        ratesMap[baseCurrency] = Currency(baseCurrency, 1.0, ExtendedCurrency(baseExtendedCurrency.name, baseExtendedCurrency.flag))
+        val firstEntry = Currency(baseCurrency, 1.0)
+        ratesMap[baseCurrency] = firstEntry
 
         rates?.apply {
             Timber.d("Transforming rates to list of Currency...")
             this.entrySet().iterator().forEach {
-                val extendedCurrency = ExtendedCurrency.getCurrencyByISO(it.key)
-                val ratesExtendedCurrency = ExtendedCurrency(extendedCurrency.name, extendedCurrency.flag)
-                ratesMap[it.key] = Currency(it.key, it.value.asDouble, ratesExtendedCurrency)
+                ratesMap[it.key] = Currency(it.key, it.value.asDouble)
             }
         }
 
-        return Rates(baseCurrency, date, ratesMap)
+        val response = Rates(baseCurrency, date)
+        response.currencies = ratesMap
+        return response
     }
 }

@@ -14,8 +14,9 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.CircleCrop
 import com.bumptech.glide.request.RequestOptions
 import com.firstratecurrency.app.R
-import com.firstratecurrency.app.data.Currency
+import com.firstratecurrency.app.data.model.Currency
 import com.firstratecurrency.app.utils.RatesListDiffCallback
+import com.mynameismidori.currencypicker.ExtendedCurrency
 import kotlinx.android.synthetic.main.list_header.view.*
 import kotlinx.android.synthetic.main.list_item_currency.view.*
 
@@ -107,9 +108,10 @@ class RatesListAdapter(context: Context, private val ratesChangeListener: RatesC
     private fun displayCurrencyItem(holder: RatesListViewHolder, position: Int) {
         val currency = currenciesList[position]
 
-        holder.view.countryCurrency.text = currency.extendedCurrency.name
+        val extendedCurrency = ExtendedCurrency.getCurrencyByISO(currency.code)
+        holder.view.countryCurrency.text = extendedCurrency.name
         holder.view.currencyCode.text = currency.code
-        Glide.with(holder.view).load(currency.extendedCurrency.flag)
+        Glide.with(holder.view).load(extendedCurrency.flag)
             .apply(Configuration.GLIDE_IMAGE_OPTIONS)
             .into(holder.view.countryFlag)
 

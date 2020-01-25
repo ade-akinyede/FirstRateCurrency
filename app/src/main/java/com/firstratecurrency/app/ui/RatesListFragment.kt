@@ -9,7 +9,8 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.firstratecurrency.app.R
-import com.firstratecurrency.app.data.Currency
+import com.firstratecurrency.app.data.model.Currency
+import com.firstratecurrency.app.viewmodels.RatesListViewModel
 import kotlinx.android.synthetic.main.fragment_rates_list.*
 import timber.log.Timber
 
@@ -24,7 +25,8 @@ class RatesListFragment: Fragment(), RatesListAdapter.RatesChangeListener {
             listLoading.visibility = View.GONE
             listError.visibility = View.GONE
             // Pass a copy of the live data rather than reference for proper change notification and handling.
-            ratesListAdapter.updateList(it.toList().map { entry -> entry.copy() } as ArrayList<Currency>)
+            val copy = list.map { it.copy() }
+            ratesListAdapter.updateList(ArrayList(copy))
         } ?: Timber.e("Rates update received but is empty")
     }
 

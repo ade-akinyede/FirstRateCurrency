@@ -1,6 +1,6 @@
 package com.firstratecurrency.app.di.component
 
-import com.firstratecurrency.app.data.RatesApiService
+import com.firstratecurrency.app.data.network.RatesApiService
 import com.firstratecurrency.app.di.module.RatesApiModule
 import dagger.Component
 

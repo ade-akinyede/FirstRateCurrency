@@ -1,10 +1,10 @@
 package com.firstratecurrency.app.di.module
 
 import com.firstratecurrency.app.BuildConfig
-import com.firstratecurrency.app.data.Rates
-import com.firstratecurrency.app.data.RatesApi
-import com.firstratecurrency.app.data.RatesApiDeserializer
-import com.firstratecurrency.app.data.RatesApiService
+import com.firstratecurrency.app.data.model.Rates
+import com.firstratecurrency.app.data.network.RatesApi
+import com.firstratecurrency.app.data.network.RatesApiDeserializer
+import com.firstratecurrency.app.data.network.RatesApiService
 import com.google.gson.GsonBuilder
 import dagger.Module
 import dagger.Provides
@@ -35,7 +35,10 @@ open class RatesApiModule {
         val httpClient = OkHttpClient.Builder()
         httpClient.addInterceptor(logging)
 
-        val gsonConverterFactory = GsonConverterFactory.create(GsonBuilder().registerTypeAdapter(Rates::class.java, RatesApiDeserializer()).create())
+        val gsonConverterFactory = GsonConverterFactory.create(GsonBuilder().registerTypeAdapter(
+            Rates::class.java,
+            RatesApiDeserializer()
+        ).create())
 
         return Retrofit.Builder()
             .baseUrl(BASE_URL)
@@ -47,5 +50,6 @@ open class RatesApiModule {
     }
 
     @Provides
-    open fun provideApiService(): RatesApiService = RatesApiService()
+    open fun provideApiService(): RatesApiService =
+        RatesApiService()
 }

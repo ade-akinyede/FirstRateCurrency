@@ -1,29 +1,39 @@
-package com.firstratecurrency.app.ui
+package com.firstratecurrency.app.data
 
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.firstratecurrency.app.FRCApp
-import com.firstratecurrency.app.data.Currency
-import com.firstratecurrency.app.data.Rates
-import com.firstratecurrency.app.data.RatesApiService
-import com.firstratecurrency.app.di.component.DaggerViewModelComponent
+import com.firstratecurrency.app.data.db.CurrenciesDao
+import com.firstratecurrency.app.data.db.RatesDao
+import com.firstratecurrency.app.data.model.Currency
+import com.firstratecurrency.app.data.model.Rates
+import com.firstratecurrency.app.data.network.RatesApiService
+import com.firstratecurrency.app.di.component.DaggerRatesRepositoryComponent
+import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.observers.DisposableSingleObserver
 import io.reactivex.schedulers.Schedulers
 import timber.log.Timber
 import javax.inject.Inject
+import javax.inject.Singleton
 
-class RatesListViewModel(app: Application): AndroidViewModel(app) {
+@Singleton
+class RatesRepository @Inject constructor(
+    private val ratesDao: RatesDao,
+    private val currenciesDao: CurrenciesDao,
+    private val ratesApiService: RatesApiService
+) {
+
+    var lastRefreshDate: Single<Long> = ratesDao.getLastRefreshDate()
 
     private val rates by lazy { MutableLiveData<ArrayList<Currency>>() }
     private val loading by lazy { MutableLiveData<Boolean>() }
     private val loadError by lazy { MutableLiveData<Boolean>() }
 
     private val disposable = CompositeDisposable()
-    @Inject
-    lateinit var ratesApiService:RatesApiService
+//    @Inject
+//    lateinit var ratesApiService: RatesApiService
 
     init {
         if (!FRCApp.Test.running) {
@@ -31,22 +41,29 @@ class RatesListViewModel(app: Application): AndroidViewModel(app) {
         }
     }
 
-    private fun inject() {
-        if (!FRCApp.Test.running) {
-            DaggerViewModelComponent.create().inject(this)
-        }
-    }
-
-    fun refresh() {
-        inject()
-        getRates()
-    }
-
     fun getRatesLiveData() = rates
     fun getRatesLoadingState() = loading
     fun getLoadErrorState() = loadError
 
-    private fun getRates() {
+    private fun inject() {
+        if (!FRCApp.Test.running) {
+            DaggerRatesRepositoryComponent.create().inject(this)
+        }
+    }
+
+    private fun refresh() {
+        inject()
+
+        fetchRatesFromApiService()
+    }
+
+//    fun getCurrencies(): LiveData<LinkedHashMap<String, Currency>> {
+//        // Retrieve dB copy or fetch from remote
+//        val currencies = currenciesDao.getCurrencies()
+//
+//    }
+
+    private fun fetchRatesFromApiService() {
         disposable.add(
             ratesApiService.getRates()
                 .subscribeOn(Schedulers.newThread())
@@ -106,7 +123,6 @@ class RatesListViewModel(app: Application): AndroidViewModel(app) {
         if (position > 0) {
             rates.value = rates.value?.run {
                 // Remove and move to top position
-//                val entry = this.removeAt(position)
                 this.add(0, this.removeAt(position))
                 this
             }
@@ -118,18 +134,21 @@ class RatesListViewModel(app: Application): AndroidViewModel(app) {
             val firstResponder = list[0]
             val currentValue = firstResponder.getCurrencyValue()
             if (currentValue != value) {
-               list.map { entry ->
-                   entry.refValue = value
-                   entry.refRate = firstResponder.rate
-               }
+                list.map { entry ->
+                    entry.refValue = value
+                    entry.refRate = firstResponder.rate
+                }
             }
 
             list
         }
     }
 
-    override fun onCleared() {
-        super.onCleared()
-        disposable.clear()
+    fun updateCurrencies(currencies: List<Currency>) {
+        currenciesDao.updateCurrencies(currencies)
     }
+
+//    fun updateLastRefreshDate(date: String) {
+//        ratesDao.updateLastRefreshDate(date)
+//    }
 }

@@ -1,5 +1,6 @@
-package com.firstratecurrency.app.data
+package com.firstratecurrency.app.data.network
 
+import com.firstratecurrency.app.data.model.Rates
 import com.firstratecurrency.app.di.component.DaggerRatesApiComponent
 import io.reactivex.Single
 import timber.log.Timber
