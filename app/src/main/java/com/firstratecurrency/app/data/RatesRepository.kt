@@ -1,6 +1,5 @@
 package com.firstratecurrency.app.data
 
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.firstratecurrency.app.FRCApp
 import com.firstratecurrency.app.data.db.CurrenciesDao
@@ -12,6 +11,7 @@ import com.firstratecurrency.app.di.component.DaggerRatesRepositoryComponent
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.observers.DisposableCompletableObserver
 import io.reactivex.observers.DisposableSingleObserver
 import io.reactivex.schedulers.Schedulers
 import timber.log.Timber
@@ -37,6 +37,7 @@ class RatesRepository @Inject constructor(
 
     init {
         if (!FRCApp.Test.running) {
+            inject()
             refresh()
         }
     }
@@ -52,30 +53,52 @@ class RatesRepository @Inject constructor(
     }
 
     private fun refresh() {
-        inject()
+        onLoading()
+        getRates()
+    }
 
+    private fun getRates() {
+        // Return the dB copy and do a refresh if
+        disposable.add(currenciesDao.getCurrencies()
+            .subscribeOn(Schedulers.newThread())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribeWith(object: DisposableSingleObserver<List<Currency>>() {
+                override fun onSuccess(list: List<Currency>) {
+                    if (list.isEmpty()) {
+                        onLocalFetchUnresolved()
+                    } else{
+                        rates.value = list as ArrayList<Currency>
+                        loading.value = false
+                    }
+                }
+
+                override fun onError(error: Throwable) {
+                    Timber.e(error)
+                    onLocalFetchUnresolved()
+                }
+
+            })
+        )
+    }
+
+    private fun onLocalFetchUnresolved() {
         fetchRatesFromApiService()
     }
 
-//    fun getCurrencies(): LiveData<LinkedHashMap<String, Currency>> {
-//        // Retrieve dB copy or fetch from remote
-//        val currencies = currenciesDao.getCurrencies()
-//
-//    }
-
-    private fun fetchRatesFromApiService() {
+    fun fetchRatesFromApiService() {
         disposable.add(
             ratesApiService.getRates()
                 .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeWith(object: DisposableSingleObserver<Rates>() {
-                    override fun onSuccess(ratesList: Rates) {
-                        onResponse(ratesList.currencies)
+                    override fun onSuccess(rates: Rates) {
+                        onNetworkRequestSuccessful(rates.currencies)
+                        updateRates(rates)
                     }
 
                     override fun onError(error: Throwable) {
                         Timber.e(error)
-                        onError()
+                        onNetworkRequestError()
                     }
 
                     override fun onStart() {
@@ -85,7 +108,7 @@ class RatesRepository @Inject constructor(
         )
     }
 
-    private fun onResponse(result: LinkedHashMap<String, Currency>) {
+    private fun onNetworkRequestSuccessful(result: LinkedHashMap<String, Currency>) {
         if (result.isNotEmpty()) {
             rates.value = rates.value?.let { currencyList ->
                 // Update rates while maintaining the current ordering
@@ -102,10 +125,12 @@ class RatesRepository @Inject constructor(
                 result.values.toList() as ArrayList<Currency>
             }
 
+            ensureCurrencyListPersistence()
+
             loadError.value = false
             loading.value = false
         } else {
-            onError()
+            onNetworkRequestError()
         }
     }
 
@@ -113,7 +138,7 @@ class RatesRepository @Inject constructor(
         loading.value = true
     }
 
-    private fun onError() {
+    private fun onNetworkRequestError() {
         loading.value = false
         rates.value = null
         loadError.value = true
@@ -129,7 +154,7 @@ class RatesRepository @Inject constructor(
         }
     }
 
-    fun onRateValueChanged(value: Double) {
+    fun onCurrencyValueChanged(value: Double) {
         rates.value = rates.value?.let { list ->
             val firstResponder = list[0]
             val currentValue = firstResponder.getCurrencyValue()
@@ -144,11 +169,42 @@ class RatesRepository @Inject constructor(
         }
     }
 
-    fun updateCurrencies(currencies: List<Currency>) {
-        currenciesDao.updateCurrencies(currencies)
+    fun getLastNetworkFetchTimestamp(): Single<Long> = ratesDao.getLastRefreshDate()
+
+    fun updateRates(rates: Rates) {
+        disposable.add(ratesDao.updateRates(rates)
+            .subscribeOn(Schedulers.newThread())
+            .observeOn(Schedulers.io())
+            .subscribeWith(object: DisposableCompletableObserver() {
+                override fun onComplete() {
+                    Timber.i("Rates updated")
+                }
+
+                override fun onError(error: Throwable) {
+                    Timber.e(error)
+                }
+            })
+        )
     }
 
-//    fun updateLastRefreshDate(date: String) {
-//        ratesDao.updateLastRefreshDate(date)
-//    }
+    fun ensureCurrencyListPersistence() {
+        rates.value?.run {
+            val toPersist = this.toList()
+
+            // update currencies db
+            disposable.add(currenciesDao.insertCurrencies(toPersist)
+                .subscribeOn(Schedulers.newThread())
+                .observeOn(Schedulers.io())
+                .subscribeWith(object: DisposableCompletableObserver() {
+                    override fun onComplete() {
+                        Timber.i("Currencies updated")
+                    }
+
+                    override fun onError(error: Throwable) {
+                        Timber.e(error)
+                    }
+                })
+            )
+        }
+    }
 }

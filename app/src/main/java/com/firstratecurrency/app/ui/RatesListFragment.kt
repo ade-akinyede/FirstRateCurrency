@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.firstratecurrency.app.R
@@ -26,7 +27,7 @@ class RatesListFragment: Fragment(), RatesListAdapter.RatesChangeListener {
             listError.visibility = View.GONE
             // Pass a copy of the live data rather than reference for proper change notification and handling.
             val copy = list.map { it.copy() }
-            ratesListAdapter.updateList(ArrayList(copy))
+            ratesList.post { ratesListAdapter.updateList(ArrayList(copy)) }
         } ?: Timber.e("Rates update received but is empty")
     }
 
@@ -66,7 +67,7 @@ class RatesListFragment: Fragment(), RatesListAdapter.RatesChangeListener {
         super.onViewCreated(view, savedInstanceState)
 
         ratesListAdapter = RatesListAdapter(requireContext(), this)
-        ratesViewModel = ViewModelProviders.of(this).get(RatesListViewModel::class.java)
+        ratesViewModel = ViewModelProvider(this).get(RatesListViewModel::class.java)
 
         ratesViewModel.getRatesLiveData().observe(viewLifecycleOwner, ratesListDataObserver)
         ratesViewModel.getRatesLoadingState().observe(viewLifecycleOwner, ratesListLoadingObserver)
@@ -76,6 +77,11 @@ class RatesListFragment: Fragment(), RatesListAdapter.RatesChangeListener {
             layoutManager = LinearLayoutManager(context)
             adapter = ratesListAdapter
         }
+    }
+
+    override fun onPause() {
+        ratesViewModel.ensureCurrencyListPersistence()
+        super.onPause()
     }
 
     override fun onFirstResponderChange(position: Int) {

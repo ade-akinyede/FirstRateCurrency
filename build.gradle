@@ -22,7 +22,7 @@ buildscript {
             rxAndroid : '2.1.1',
             rxjava2 : '2.2.16',
             support : '1.0.0',
-            lifecycle : '2.1.0',
+            lifecycle : '2.2.0',
             retrofit : '2.3.0',
             junit: '4.12',
             espresso: '3.2.0',
