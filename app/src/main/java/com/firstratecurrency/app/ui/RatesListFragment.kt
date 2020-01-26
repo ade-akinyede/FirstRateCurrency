@@ -27,6 +27,7 @@ class RatesListFragment: Fragment(), RatesListAdapter.RatesChangeListener {
             listError.visibility = View.GONE
             // Pass a copy of the live data rather than reference for proper change notification and handling.
             val copy = list.map { it.copy() }
+            // Post update to main thread's message queue for appropriate execution flow.
             ratesList.post { ratesListAdapter.updateList(ArrayList(copy)) }
         } ?: Timber.e("Rates update received but is empty")
     }

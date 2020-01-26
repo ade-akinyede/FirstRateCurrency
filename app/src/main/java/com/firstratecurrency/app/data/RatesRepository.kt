@@ -1,5 +1,6 @@
 package com.firstratecurrency.app.data
 
+import android.annotation.SuppressLint
 import androidx.lifecycle.MutableLiveData
 import com.firstratecurrency.app.FRCApp
 import com.firstratecurrency.app.data.db.CurrenciesDao
@@ -8,13 +9,17 @@ import com.firstratecurrency.app.data.model.Currency
 import com.firstratecurrency.app.data.model.Rates
 import com.firstratecurrency.app.data.network.RatesApiService
 import com.firstratecurrency.app.di.component.DaggerRatesRepositoryComponent
+import com.firstratecurrency.app.utils.RATES_REFRESH_RATE_IN_SECS
+import io.reactivex.Observable
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.disposables.Disposable
 import io.reactivex.observers.DisposableCompletableObserver
 import io.reactivex.observers.DisposableSingleObserver
 import io.reactivex.schedulers.Schedulers
 import timber.log.Timber
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -25,15 +30,11 @@ class RatesRepository @Inject constructor(
     private val ratesApiService: RatesApiService
 ) {
 
-    var lastRefreshDate: Single<Long> = ratesDao.getLastRefreshDate()
-
     private val rates by lazy { MutableLiveData<ArrayList<Currency>>() }
     private val loading by lazy { MutableLiveData<Boolean>() }
     private val loadError by lazy { MutableLiveData<Boolean>() }
 
     private val disposable = CompositeDisposable()
-//    @Inject
-//    lateinit var ratesApiService: RatesApiService
 
     init {
         if (!FRCApp.Test.running) {
@@ -69,6 +70,7 @@ class RatesRepository @Inject constructor(
                     } else{
                         rates.value = list as ArrayList<Currency>
                         loading.value = false
+                        checkLastUpdateAndResolve()
                     }
                 }
 
@@ -81,31 +83,68 @@ class RatesRepository @Inject constructor(
         )
     }
 
+    private fun checkLastUpdateAndResolve() {
+        disposable.add(getLastNetworkFetchTimestamp()
+            .subscribeOn(Schedulers.io())
+            .observeOn(Schedulers.io())
+            .subscribeWith(object: DisposableSingleObserver<Long>() {
+                override fun onSuccess(timestamp: Long) {
+                    // When the elapsed time is over a minute, refresh immediately.
+                    // Otherwise, schedule according to elapsed.
+                    val elapsedSecs = (System.currentTimeMillis() - timestamp) / 1000
+                    if (elapsedSecs > RATES_REFRESH_RATE_IN_SECS) {
+                        fetchRatesFromApiService()
+                    } else{
+                        scheduleNextRatesUpdate(elapsedSecs)
+                    }
+                }
+
+                override fun onError(error: Throwable) {
+                    Timber.e(error)
+                }
+            })
+        )
+
+    }
+
+    @SuppressLint("CheckResult")
+    private fun scheduleNextRatesUpdate(timeInSeconds: Long) {
+        // Fetch new rates after 1 minute
+        Observable.timer(timeInSeconds, TimeUnit.SECONDS, Schedulers.io())
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe {
+                fetchRatesFromApiService()
+            }
+    }
+
     private fun onLocalFetchUnresolved() {
         fetchRatesFromApiService()
     }
 
+    private fun getRatesApiDisposable(): Disposable =
+        ratesApiService.getRates()
+            .subscribeOn(Schedulers.newThread())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribeWith(object: DisposableSingleObserver<Rates>() {
+                override fun onSuccess(rates: Rates) {
+                    onNetworkRequestSuccessful(rates.currencies)
+                    updateRates(rates)
+                }
+
+                override fun onError(error: Throwable) {
+                    Timber.e(error)
+                    onNetworkRequestError()
+                }
+
+                override fun onStart() {
+                    onLoading()
+                }
+            })
+
+
     fun fetchRatesFromApiService() {
-        disposable.add(
-            ratesApiService.getRates()
-                .subscribeOn(Schedulers.newThread())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribeWith(object: DisposableSingleObserver<Rates>() {
-                    override fun onSuccess(rates: Rates) {
-                        onNetworkRequestSuccessful(rates.currencies)
-                        updateRates(rates)
-                    }
-
-                    override fun onError(error: Throwable) {
-                        Timber.e(error)
-                        onNetworkRequestError()
-                    }
-
-                    override fun onStart() {
-                        onLoading()
-                    }
-                })
-        )
+        disposable.add(getRatesApiDisposable())
     }
 
     private fun onNetworkRequestSuccessful(result: LinkedHashMap<String, Currency>) {
@@ -126,6 +165,7 @@ class RatesRepository @Inject constructor(
             }
 
             ensureCurrencyListPersistence()
+            scheduleNextRatesUpdate(RATES_REFRESH_RATE_IN_SECS)
 
             loadError.value = false
             loading.value = false
@@ -169,7 +209,7 @@ class RatesRepository @Inject constructor(
         }
     }
 
-    fun getLastNetworkFetchTimestamp(): Single<Long> = ratesDao.getLastRefreshDate()
+    private fun getLastNetworkFetchTimestamp(): Single<Long> = ratesDao.getLastRefreshDate()
 
     fun updateRates(rates: Rates) {
         disposable.add(ratesDao.updateRates(rates)
