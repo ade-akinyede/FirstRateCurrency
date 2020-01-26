@@ -1,8 +1,11 @@
 package com.firstratecurrency.app
 
 import android.app.Application
+import android.provider.Telephony
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.firstratecurrency.app.data.RatesRepository
+import com.firstratecurrency.app.data.db.CurrenciesDao
+import com.firstratecurrency.app.data.db.RatesDao
 import com.firstratecurrency.app.data.model.Currency
 import com.firstratecurrency.app.data.model.Rates
 import com.firstratecurrency.app.data.network.RatesApiService
@@ -32,22 +35,18 @@ class RatesRepositoryTest {
     lateinit var ratesApiService: RatesApiService
 
     private val application: Application = Mockito.mock(Application::class.java)
+    private val currenciesDao: CurrenciesDao = Mockito.mock(CurrenciesDao::class.java)
+    private val ratesDao: RatesDao = Mockito.mock(RatesDao::class.java)
 
     private lateinit var ratesRepository: RatesRepository
 
-//    @Before
-//    fun setup() {
-//        MockitoAnnotations.initMocks(this)
-//        FRCApp.Test.running = true
-//
-//        ratesRepository =
-//            RatesRepository()
-//            RatesListViewModel(application)
-//        DaggerRatesRepositoryComponent.builder()
-//            .ratesApiModule(RatesApiModuleTest(ratesApiService))
-//            .build()
-//            .inject(ratesRepository)
-//    }
+    @Before
+    fun setup() {
+        MockitoAnnotations.initMocks(this)
+        FRCApp.Test.running = true
+
+        ratesRepository = RatesRepository(ratesDao, currenciesDao, ratesApiService)
+    }
 
     @Before
     fun setupRxSchedulers() {
@@ -62,15 +61,11 @@ class RatesRepositoryTest {
         RxJavaPlugins.setInitNewThreadSchedulerHandler { immediate }
         RxAndroidPlugins.setInitMainThreadSchedulerHandler { immediate }
     }
-//
+
 //    @Test
 //    fun getRatesSuccess() {
-//        val currency = Currency(
-//            "EUR",
-//            1.83
-//        )
-//        val rates =
-//            Rates("", "")
+//        val currency = Currency("EUR", 1.83)
+//        val rates = Rates("", "")
 //
 //        val testSingle = Single.just(rates)
 //        Mockito.`when`(ratesApiService.getRates()).thenReturn(testSingle)

@@ -28,7 +28,7 @@
         android:id="@+id/listError"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Could not get rates at this moment"
+        android:text="@string/error_fetching_rates"
         android:textSize="@dimen/detail_text_size"
         android:drawableTop="@drawable/vd_error_outline_black"
         app:layout_constraintStart_toStartOf="parent"
