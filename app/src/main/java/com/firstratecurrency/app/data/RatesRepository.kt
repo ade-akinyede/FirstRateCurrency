@@ -34,7 +34,8 @@ class RatesRepository @Inject constructor(
     private val loading by lazy { MutableLiveData<Boolean>() }
     private val loadError by lazy { MutableLiveData<Boolean>() }
 
-    private val disposable = CompositeDisposable()
+    private val requestDisposable = CompositeDisposable()
+    private val scheduledUpdateDisposable = CompositeDisposable()
 
     init {
         if (!FRCApp.Test.running) {
@@ -60,7 +61,7 @@ class RatesRepository @Inject constructor(
 
     private fun getRates() {
         // Return the dB copy and do a refresh if
-        disposable.add(currenciesDao.getCurrencies()
+        requestDisposable.add(currenciesDao.getCurrencies()
             .subscribeOn(Schedulers.newThread())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeWith(object: DisposableSingleObserver<List<Currency>>() {
@@ -84,7 +85,7 @@ class RatesRepository @Inject constructor(
     }
 
     private fun checkLastUpdateAndResolve() {
-        disposable.add(getLastNetworkFetchTimestamp()
+        requestDisposable.add(getLastNetworkFetchTimestamp()
             .subscribeOn(Schedulers.io())
             .observeOn(Schedulers.io())
             .subscribeWith(object: DisposableSingleObserver<Long>() {
@@ -110,12 +111,13 @@ class RatesRepository @Inject constructor(
     @SuppressLint("CheckResult")
     private fun scheduleNextRatesUpdate(timeInSeconds: Long) {
         // Fetch new rates after given time
-        Observable.timer(timeInSeconds, TimeUnit.SECONDS)
+        scheduledUpdateDisposable.add(Observable.timer(timeInSeconds, TimeUnit.SECONDS)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe {
                 fetchRatesFromApiService()
             }
+        )
     }
 
     private fun onLocalFetchUnresolved() {
@@ -144,7 +146,7 @@ class RatesRepository @Inject constructor(
 
 
     fun fetchRatesFromApiService() {
-        disposable.add(getRatesApiDisposable())
+        requestDisposable.add(getRatesApiDisposable())
     }
 
     private fun onNetworkRequestSuccessful(result: LinkedHashMap<String, Currency>) {
@@ -217,7 +219,7 @@ class RatesRepository @Inject constructor(
     private fun getLastNetworkFetchTimestamp(): Single<Long> = ratesDao.getLastRefreshDate()
 
     fun updateRates(rates: Rates) {
-        disposable.add(ratesDao.updateRates(rates)
+        requestDisposable.add(ratesDao.updateRates(rates)
             .subscribeOn(Schedulers.newThread())
             .observeOn(Schedulers.io())
             .subscribeWith(object: DisposableCompletableObserver() {
@@ -237,7 +239,7 @@ class RatesRepository @Inject constructor(
             val toPersist = this.toList()
 
             // update currencies db
-            disposable.add(currenciesDao.insertCurrencies(toPersist)
+            requestDisposable.add(currenciesDao.insertCurrencies(toPersist)
                 .subscribeOn(Schedulers.newThread())
                 .observeOn(Schedulers.io())
                 .subscribeWith(object: DisposableCompletableObserver() {

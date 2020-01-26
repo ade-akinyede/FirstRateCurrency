@@ -22,7 +22,7 @@ class RatesApiDeserializerTest {
                 "CNY":7.9663,
                 "CZK":25.784,
                 "DKK":7.4766,
-                "GBP":0.90064,a
+                "GBP":0.90064,
                 "HKD":9.1568,
                 "HRK":7.4539,
                 "HUF":327.36,
@@ -58,6 +58,7 @@ class RatesApiDeserializerTest {
 
         Assert.assertEquals(jsonElement.asJsonObject.get("base").asString, rates.base)
         Assert.assertEquals(jsonElement.asJsonObject.get("date").asString, rates.date)
-        Assert.assertEquals(jsonElement.asJsonObject.get("rates").asJsonObject.entrySet().size, rates.currencies.size)
+        // +1 to take the base currency into account which isn't listed in rates
+        Assert.assertEquals(jsonElement.asJsonObject.get("rates").asJsonObject.entrySet().size + 1, rates.currencies.size)
     }
 }
