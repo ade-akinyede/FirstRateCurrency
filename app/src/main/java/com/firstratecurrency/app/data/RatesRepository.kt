@@ -109,8 +109,8 @@ class RatesRepository @Inject constructor(
 
     @SuppressLint("CheckResult")
     private fun scheduleNextRatesUpdate(timeInSeconds: Long) {
-        // Fetch new rates after 1 minute
-        Observable.timer(timeInSeconds, TimeUnit.SECONDS, Schedulers.io())
+        // Fetch new rates after given time
+        Observable.timer(timeInSeconds, TimeUnit.SECONDS)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe {
@@ -153,9 +153,14 @@ class RatesRepository @Inject constructor(
                 // Update rates while maintaining the current ordering
                 // by cycling through the current (rates) list and mapping
                 // the result to the entry.
+                val updatedRefRate = result[currencyList[0].code]?.rate
+
                 currencyList.map { entry ->
                     result[entry.code]?.let { updatedCurrency ->
                         entry.rate = updatedCurrency.rate
+                        if (updatedRefRate != null) {
+                            entry.refRate = updatedRefRate
+                        }
                     }
                 }
 
@@ -175,7 +180,7 @@ class RatesRepository @Inject constructor(
     }
 
     private fun onLoading() {
-        loading.value = true
+        loading.postValue(true)
     }
 
     private fun onNetworkRequestError() {

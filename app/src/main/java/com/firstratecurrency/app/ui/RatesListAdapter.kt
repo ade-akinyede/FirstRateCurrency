@@ -19,6 +19,7 @@ import com.firstratecurrency.app.utils.RatesListDiffCallback
 import com.mynameismidori.currencypicker.ExtendedCurrency
 import kotlinx.android.synthetic.main.list_header.view.*
 import kotlinx.android.synthetic.main.list_item_currency.view.*
+import timber.log.Timber
 
 class RatesListAdapter(context: Context, private val ratesChangeListener: RatesChangeListener): RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
@@ -75,6 +76,7 @@ class RatesListAdapter(context: Context, private val ratesChangeListener: RatesC
 
     private val currenciesList: ArrayList<Currency> = arrayListOf()
     private val HEADER_TITLE = context.getString(R.string.title_rates)
+    private var firstResponderRefValCache: Currency? = null
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         val inflater = LayoutInflater.from(parent.context)
@@ -127,6 +129,7 @@ class RatesListAdapter(context: Context, private val ratesChangeListener: RatesC
         } else {
             val diffCallback = RatesListDiffCallback(currenciesList, updatedList)
             val diffResult = DiffUtil.calculateDiff(diffCallback)
+            firstResponderRefValCache = currenciesList[0]
             currenciesList.clear()
             currenciesList.addAll(updatedList)
             diffResult.dispatchUpdatesTo(this)

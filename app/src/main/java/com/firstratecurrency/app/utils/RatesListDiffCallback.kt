@@ -16,12 +16,8 @@ class RatesListDiffCallback(private val oldList: ArrayList<Currency>, private va
     override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
         val oldItem = oldList[oldItemPosition]
         val newItem = newList[newItemPosition]
-        // (Currency) data class provides an adequate equals comparison
-        return oldItem == newItem
 
-//        return oldItem.code == newItem.code &&
-//                oldItem.rate == newItem.rate &&
-//                oldItem.refRate == newItem.refRate &&
-//                oldItem.refValue == newItem.refValue
+        return oldItem.code == newItem.code &&
+                oldItem.getCurrencyValue() == newItem.getCurrencyValue()
     }
 }

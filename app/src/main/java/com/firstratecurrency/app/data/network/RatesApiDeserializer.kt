@@ -14,7 +14,6 @@ class RatesApiDeserializer: JsonDeserializer<Rates> {
         typeOfT: Type?,
         context: JsonDeserializationContext?
     ): Rates {
-        Timber.d("Deserializing Json: %s", json?.toString())
         val jsonObject = json?.asJsonObject
         val baseCurrency: String = jsonObject?.get("base")?.asString ?: ""
         val date: String = jsonObject?.get("date")?.asString ?: ""
