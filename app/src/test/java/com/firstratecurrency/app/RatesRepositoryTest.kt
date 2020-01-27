@@ -1,7 +1,6 @@
 package com.firstratecurrency.app
 
 import android.app.Application
-import android.provider.Telephony
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.firstratecurrency.app.data.RatesRepository
 import com.firstratecurrency.app.data.db.CurrenciesDao
@@ -9,8 +8,7 @@ import com.firstratecurrency.app.data.db.RatesDao
 import com.firstratecurrency.app.data.model.Currency
 import com.firstratecurrency.app.data.model.Rates
 import com.firstratecurrency.app.data.network.RatesApiService
-import com.firstratecurrency.app.di.component.DaggerRatesRepositoryComponent
-import com.firstratecurrency.app.viewmodels.RatesListViewModel
+import io.reactivex.Completable
 import io.reactivex.Scheduler
 import io.reactivex.Single
 import io.reactivex.android.plugins.RxAndroidPlugins
@@ -62,17 +60,32 @@ class RatesRepositoryTest {
         RxAndroidPlugins.setInitMainThreadSchedulerHandler { immediate }
     }
 
-//    @Test
-//    fun getRatesSuccess() {
-//        val currency = Currency("EUR", 1.83)
-//        val rates = Rates("", "")
-//
-//        val testSingle = Single.just(rates)
-//        Mockito.`when`(ratesApiService.getRates()).thenReturn(testSingle)
-//
-//        ratesRepository.refresh()
-//
-//        Assert.assertEquals(1, ratesRepository.rates.value?.size)
-//
-//    }
+    @Test
+    fun getRatesSuccess() {
+        val rates = Rates("EUR", "2020-01")
+        val currenciesMap = LinkedHashMap<String, Currency>()
+        val aud = Currency("AUD",1.6207)
+        val bgn = Currency("BGN",1.961)
+        val brl = Currency("BRL",4.8046)
+        val cad = Currency("CAD",1.5379)
+        val chf = Currency("CHF",1.1305)
+
+        currenciesMap[aud.code] = aud
+        currenciesMap[bgn.code] = bgn
+        currenciesMap[brl.code] = brl
+        currenciesMap[cad.code] = cad
+        currenciesMap[chf.code] = chf
+
+        rates.currencies = currenciesMap
+
+        val testSingle = Single.just(rates)
+        Mockito.`when`(ratesDao.updateRates(rates)).then { Completable.complete() }
+        Mockito.`when`(currenciesDao.insertCurrencies(rates.currencies.values.toList())).then { Completable.complete() }
+        Mockito.`when`(ratesApiService.getRates()).thenReturn(testSingle)
+
+        ratesRepository.fetchRatesFromApiService()
+
+        Assert.assertEquals(currenciesMap.size, ratesRepository.getRatesLiveData().value?.size)
+
+    }
 }
