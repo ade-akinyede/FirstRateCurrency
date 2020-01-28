@@ -18,7 +18,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
-//@RunWith(AndroidJUnit4::class)
+@RunWith(AndroidJUnit4::class)
 class CurrenciesDaoTest {
 
     private lateinit var database: AppDatabase
@@ -45,21 +45,18 @@ class CurrenciesDaoTest {
         database.close()
     }
 
-    @Test fun testGetCurrencies() {
-        currenciesDao.insertCurrencies(listOf(aud, bgn, brl, cad, chf))
-        currenciesDao.getCurrencies()
-            .test()
-            .assertValue { currenciesList ->
-                assertThat(currenciesList.size, equalTo(5))
+    @Test fun testInsertCurrenciesAndValidateInsertionOrder() {
+        val currencies = listOf(aud, bgn, brl, cad, chf)
+        currenciesDao.insertCurrencies(currencies).blockingAwait()
+        val result = currenciesDao.getCurrencies().blockingGet()
+        assertThat(result.size, equalTo(currencies.size))
 
-                // Ensure plant list is sorted by insertion order
-                assertThat(currenciesList[0], equalTo(aud))
-                assertThat(currenciesList[1], equalTo(bgn))
-                assertThat(currenciesList[2], equalTo(brl))
-                assertThat(currenciesList[3], equalTo(cad))
-                assertThat(currenciesList[4], equalTo(chf))
-                true
-            }
+        // Ensure plant list is sorted by insertion order
+        assertThat(result[0], equalTo(aud))
+        assertThat(result[1], equalTo(bgn))
+        assertThat(result[2], equalTo(brl))
+        assertThat(result[3], equalTo(cad))
+        assertThat(result[4], equalTo(chf))
     }
 
 //    @Test fun testInsertCurrencies() {
