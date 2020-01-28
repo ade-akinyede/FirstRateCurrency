@@ -30,6 +30,7 @@ buildscript {
             work: '2.1.0',
             truth: '0.42',
             espresso: '3.2.0',
+            runner: '1.1.1',
             coreTesting: '2.1.0',
             testRunner: '1.2.0',
             mockito: '2.11.0',

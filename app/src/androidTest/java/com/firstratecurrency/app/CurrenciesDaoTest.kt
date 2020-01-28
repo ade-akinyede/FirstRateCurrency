@@ -7,8 +7,6 @@ import androidx.test.platform.app.InstrumentationRegistry
 import com.firstratecurrency.app.data.db.AppDatabase
 import com.firstratecurrency.app.data.db.CurrenciesDao
 import com.firstratecurrency.app.data.model.Currency
-import io.reactivex.internal.util.NotificationLite.getValue
-import io.reactivex.observers.TestObserver
 import kotlinx.coroutines.runBlocking
 import org.hamcrest.CoreMatchers.equalTo
 import org.junit.After
@@ -58,20 +56,4 @@ class CurrenciesDaoTest {
         assertThat(result[3], equalTo(cad))
         assertThat(result[4], equalTo(chf))
     }
-
-//    @Test fun testInsertCurrencies() {
-//        val plantList = getValue(currenciesDao.getPlantsWithGrowZoneNumber(1))
-//        assertThat(plantList.size, equalTo(2))
-//        assertThat(getValue(currenciesDao.getPlantsWithGrowZoneNumber(2)).size, equalTo(1))
-//        assertThat(getValue(currenciesDao.getPlantsWithGrowZoneNumber(3)).size, equalTo(0))
-//
-//        // Ensure plant list is sorted by name
-//        assertThat(plantList[0], equalTo(plantA))
-//        assertThat(plantList[1], equalTo(plantB))
-//    }
-
-//    @Test fun testInsertCurrencies() {
-//        assertThat(getValue(currenciesDao.getPlant(plantA.plantId)), equalTo(plantA))
-//    }
-
 }

@@ -32,7 +32,6 @@ class RatesRepositoryTest {
     @Mock
     lateinit var ratesApiService: RatesApiService
 
-    private val application: Application = Mockito.mock(Application::class.java)
     private val currenciesDao: CurrenciesDao = Mockito.mock(CurrenciesDao::class.java)
     private val ratesDao: RatesDao = Mockito.mock(RatesDao::class.java)
 
@@ -61,7 +60,7 @@ class RatesRepositoryTest {
     }
 
     @Test
-    fun getRatesSuccess() {
+    fun testGetRatesSuccess() {
         val rates = Rates("EUR", "2020-01")
         val currenciesMap = LinkedHashMap<String, Currency>()
         val aud = Currency("AUD",1.6207)

@@ -54,14 +54,16 @@ dependencies {
     androidTestImplementation "androidx.test.uiautomator:uiautomator:$versions.uiAutomator"
     androidTestImplementation "androidx.work:work-testing:$versions.work"
     androidTestImplementation "com.google.truth:truth:$versions.truth"
-    testImplementation "junit:junit:$versions.junit"
-
-    androidTestImplementation "androidx.test:core:$versions.testRunner"
-    testImplementation "org.mockito:mockito-inline:$versions.mockito"
     androidTestImplementation "androidx.test:runner:$versions.testRunner"
     androidTestImplementation "androidx.test:rules:$versions.testRunner"
-//    testImplementation "android.arch.core:core-testing:$versions.runner"
-//    kaptTest "com.google.dagger:dagger-compiler:$versions.dagger"
+    androidTestImplementation "androidx.test:core:$versions.testRunner"
+    androidTestImplementation "org.mockito:mockito-android:$versions.mockito"
+
+    testImplementation "org.mockito:mockito-core:$versions.mockito"
+    testImplementation "org.mockito:mockito-inline:$versions.mockito"
+    testImplementation "android.arch.core:core-testing:$versions.runner"
+    kaptTest "com.google.dagger:dagger-compiler:$versions.dagger"
+    testImplementation "junit:junit:$versions.junit"
 
     // Support Design
     implementation "com.android.support:design:$versions.support"
